@@ -1,0 +1,1 @@
+export const BASE_URL = "https://rkpjewellery-production.up.railway.app";
