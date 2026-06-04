@@ -187,7 +187,24 @@ const openRazorpay = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(paymentPayload),
+      body: JSON.stringify({
+      payment_id: data.razorpay_payment_id,
+      order_id: null,
+      amount: amount,
+      accno: accno,
+      metal: ledger[0]?.METALTYPE,
+      rate: rate,
+      weight: parseFloat(total.toFixed(3)),
+      installment: customer[0]?.UNPAID || 1,
+      customername: customer[0]?.customername,
+      address: customer[0]?.StreetName,
+      area: customer[0]?.area,
+      city: customer[0]?.city,
+      mobile: customer[0]?.mobile,
+      bonus: parseFloat(bonuswt.toFixed(3)),
+      payment_mode: "upi",
+      upi_id: null,
+    }),
     });
 
     const result = await response.json();

@@ -287,7 +287,7 @@ app.post("/payment-success", async (req, res) => {
 
   const razorpay = new Razorpay({
     key_id: "rzp_test_SxRh2Udirr1XPt",
-    key_secret: "<rzp_test_key_secret>"
+    key_secret: ""
   });
 
   const {
@@ -304,7 +304,9 @@ app.post("/payment-success", async (req, res) => {
     area,
     city,
     mobile,
-    bonus
+    bonus,
+    payment_mode: req_payment_mode,
+    upi_id: req_upi_id
   } = req.body;
 
   console.log("✅ Payment Success Request Received:", { 
@@ -318,15 +320,11 @@ app.post("/payment-success", async (req, res) => {
   try {
     await sql.connect(config);
 
-    const payment = await razorpay.payments.fetch(payment_id);
-
-    console.log("Razorpay Response:", payment);
-
-    // ✅ AUTO DETECT MODE
-    const payment_mode = payment.method; // upi / card / wallet / netbanking
-    const upi_id = payment.vpa || null;
-    const card_last4 = payment.card?.last4 || null;
-    const card_type = payment.card?.network || null;
+    // Use payment info from request body (no secret key needed)
+    const payment_mode = req_payment_mode || "upi";
+    const upi_id = req_upi_id || null;
+    const card_last4 = null;
+    const card_type = null;
 
     // ✅ STORE IN PaymentTable
     console.log("📝 Storing in PaymentTable with bonus:", bonus);
@@ -378,7 +376,7 @@ app.post("/newschpay-success", async (req, res) => {
 
   const razorpay = new Razorpay({
     key_id: "rzp_test_SxRh2Udirr1XPt",
-    key_secret: "<rzp_test_key_secret>"
+    key_secret: ""
   });
 
   const {
@@ -395,7 +393,9 @@ app.post("/newschpay-success", async (req, res) => {
     area,
     city,
     mobile,
-    bonus
+    bonus,
+    payment_mode: req_payment_mode2,
+    upi_id: req_upi_id2
   } = req.body;
 
   console.log("✅ New Scheme Payment Request Received:", { 
@@ -409,11 +409,11 @@ app.post("/newschpay-success", async (req, res) => {
   try {
     await sql.connect(config);
 
-    const payment = await razorpay.payments.fetch(payment_id);
-    const payment_mode = payment.method;
-    const upi_id = payment.vpa || null;
-    const card_last4 = payment.card?.last4 || null;
-    const card_type = payment.card?.network || null;
+    // Use payment info from request body (no secret key needed)
+    const payment_mode = req_payment_mode2 || "upi";
+    const upi_id = req_upi_id2 || null;
+    const card_last4 = null;
+    const card_type = null;
 
     // ✅ Use SERIALIZABLE transaction to prevent duplicate REGNO
     const pool = await sql.connect(config);

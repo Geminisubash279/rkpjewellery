@@ -132,6 +132,8 @@ function NewScheme({ navigation, route }) {
           city: customer?.City,
           mobile: customer?.Mobile,
           bonus: (scheme?.schemeName === "DIGIGOLD" || scheme?.schemeName === "DIGISILVER") ? parseFloat((parseFloat(amount) / parseFloat(rate) * 0.09).toFixed(3)) : 0,
+          payment_mode: "upi",
+          upi_id: null,
       })
       });
   
