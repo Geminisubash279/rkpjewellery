@@ -147,7 +147,7 @@ const openRazorpay = () => {
     description: 'Gold Scheme Payment',
     image: './assets/logo.png', // optional
     currency: 'INR',
-    key: 'rzp_live_SXJ0UTQhEh72ak', // 🔴 Replace with your Razorpay Key
+    key: 'rzp_test_SxRh2Udirr1XPt',
     amount: parseFloat(amount) * 100, // in paise
     name: 'RKP Jewellery',
     prefill: {
