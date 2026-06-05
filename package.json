@@ -7,6 +7,7 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
+    "server": "node server.js",
     "test": "jest"
   },
   "dependencies": {
@@ -15,6 +16,11 @@
     "@react-navigation/bottom-tabs": "^7.16.2",
     "@react-navigation/native": "^7.2.5",
     "@react-navigation/native-stack": "^7.16.0",
+    "axios": "^1.17.0",
+    "cors": "^2.8.6",
+    "express": "^4.22.2",
+    "mssql": "^11.0.1",
+    "razorpay": "^2.9.6",
     "react": "19.2.3",
     "react-native": "0.85.3",
     "react-native-gesture-handler": "^3.0.0",
@@ -46,6 +52,6 @@
     "typescript": "^5.8.3"
   },
   "engines": {
-    "node": ">= 22.11.0"
+    "node": ">= 20.0.0"
   }
 }
