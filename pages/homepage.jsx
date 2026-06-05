@@ -132,7 +132,7 @@ const silverRotate = silverAnim.interpolate({
           <View style={styles.schemeList}>
             {/* Digi Gold Scheme */}
             <Card style={styles.schemeCardRow}>
-              <Image source={require('./assets/S1.png')} style={styles.schemeImage} />
+              <Image source={require('../assets/S1.png')} style={styles.schemeImage} />
               <Card.Content>
                 <View style={styles.actionRow}>
                   <Text style={styles.schemeTitle}>DigiGold</Text>
@@ -144,7 +144,7 @@ const silverRotate = silverAnim.interpolate({
 
             {/* Digi Silver Scheme */}
             <Card style={styles.schemeCardRow}>
-              <Image source={require('./assets/S2.png')} style={styles.schemeImage} />
+              <Image source={require('../assets/S2.png')} style={styles.schemeImage} />
               <Card.Content>
                 <View style={styles.actionRow}>
                   <Text style={styles.schemeTitle}>DigiSilver</Text>
@@ -156,7 +156,7 @@ const silverRotate = silverAnim.interpolate({
 
             {/* Aishwarya Scheme */}
             <Card style={styles.schemeCardRow}>
-              <Image source={require('./assets/S3.png')} style={styles.schemeImage} />
+              <Image source={require('../assets/S3.png')} style={styles.schemeImage} />
               <Card.Content>
                 <View style={styles.actionRow}>
                   <Text style={styles.schemeTitle}>Aishwarya Lakshmi</Text>
@@ -168,7 +168,7 @@ const silverRotate = silverAnim.interpolate({
 
             {/* Swarna Lakshmi Scheme */}
             <Card style={styles.schemeCardRow}>
-              <Image source={require('./assets/S4.png')} style={styles.schemeImage} />
+              <Image source={require('../assets/S4.png')} style={styles.schemeImage} />
               <Card.Content>
                 <View style={styles.actionRow}>
                   <Text style={styles.schemeTitle}>Swarna Lakshmi</Text>
