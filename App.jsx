@@ -76,9 +76,9 @@ const sendOTP = async () => {
     }
   };
 
-  const facebookLogin = () => Linking.openURL('https://www.facebook.com/share/1b3qmzCAcd/?mibextid=wwXIfr');
-  const instagramLogin = () => Linking.openURL('https://www.instagram.com/gsthangamaligaiattur?igsh=MXY3cGw4b2lwZXBzMg%3D%3D&utm_source=qr');
-  const youtubeOpen = () => Linking.openURL('https://youtube.com/@gsthangamaligai?si=Rx20SX_sUvAvqmkK');
+  const facebookLogin = () => Linking.openURL('https://www.facebook.com');
+  const instagramLogin = () => Linking.openURL('https://www.instagram.com');
+  const youtubeOpen = () => Linking.openURL('https://youtube.com');
 
   const handlePinChange = (text, index) => {
   if (/^[0-9]?$/.test(text)) {
@@ -102,7 +102,7 @@ const sendOTP = async () => {
     <PaperProvider>
       <StatusBar backgroundColor="#660606" barStyle="light-content" />
       <Appbar.Header style={{ backgroundColor: '#660606' }}>
-        <Appbar.Content title="GS Thanga Maligai" color="#ffffff" />
+        <Appbar.Content title="RKP Jewellery" color="#ffffff" />
       </Appbar.Header>
 
       <KeyboardAvoidingView
@@ -117,7 +117,7 @@ const sendOTP = async () => {
         >
         <Text style={styles.Heading1}>Welcome To</Text>       
         <Image
-          source={require('./android/assets/logo.png')}
+          source={require('./assets/logo.png')}
           style={{ width: 200, height: 200, resizeMode: 'contain' }}
         />
 
@@ -203,7 +203,7 @@ const sendOTP = async () => {
             </TouchableOpacity>
         </View>
           <Text style={styles.copyright}>
-          © 2026 GS Thanga Maligai. All Rights Reserved.
+          © 2026 RKP Jewellery. All Rights Reserved.
         </Text>
       </ScrollView>
       </KeyboardAvoidingView>

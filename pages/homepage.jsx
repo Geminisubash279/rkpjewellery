@@ -10,7 +10,7 @@ import { Dimensions } from "react-native";
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 const screenWidth = Dimensions.get("window").width;
-const bannerImages = [require("../android/assets/1.jpg"), require("../android/assets/2.jpg"), require("../android/assets/3.jpg"), require("../android/assets/4.jpg"), require("../android/assets/5.jpg"), require("../android/assets/6.jpg"), require("../android/assets/7.jpg"), require("../android/assets/8.jpg"), require("../android/assets/9.jpg"), require("../android/assets/10.jpg"), require("../android/assets/11.jpg"), require("../android/assets/12.jpg"), require("../android/assets/13.jpg"), require("../android/assets/14.jpg"), require("../android/assets/15.jpg"), require("../android/assets/16.jpg"), require("../android/assets/17.jpg"), require("../android/assets/18.jpg"), require("../android/assets/19.jpg"), require("../android/assets/20.jpg"), require("../android/assets/21.jpg"), require("../android/assets/22.jpg"), require("../android/assets/23.jpg"), require("../android/assets/24.jpg"), require("../android/assets/25.jpg")];
+const bannerImages = [];
 function HomeScreen({ navigation, route }) {  
   const [name, setName] = useState("");
   const [data, setData] = useState([]);
@@ -129,116 +129,56 @@ const silverRotate = silverAnim.interpolate({
           
 
           <Text style={{fontSize:16, fontWeight:"bold", color:"#6e0501", marginBottom:8, textAlign:"center"}}>Our Schemes</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} snapToInterval={screenWidth - 20} decelerationRate="fast" snapToAlignment="start" contentContainerStyle={{ paddingHorizontal: 10 }} >
-            {/* Digi Gold Scheme */}            
-            <Card style={styles.schemeCardHorizontal}>
-              <Image source={require("../android/assets/S1.jpeg")} style={styles.schemeImage} />
-
-              <Card.Content>
-                <View style={styles.actionRow}> 
-                <Text style={styles.schemeTitle}>DigiGold</Text>
-                      <Button mode="contained" style={styles.proceedBtn} labelStyle={styles.proceedBtnText} textColor="#ffffff" onPress={() => 
-                        navigation.navigate("SchemeDetails", {scheme: "gold", schemeId: "11", mobile: mobile || route?.params?.mobile })}> Know More </Button>
-                  </View>
-              </Card.Content>
-            </Card>
-
-          {/* Digi Silver Scheme */}
-            <Card style={styles.schemeCardHorizontal}>
-              <Image source={require("../android/assets/S2.jpeg")} style={styles.schemeImage} />
-              <Card.Content>
-                <View style={styles.actionRow}>   
-                <Text style={styles.schemeTitle}>Digisilver</Text>                                     
-                      <Button mode="contained" style={styles.proceedBtn} labelStyle={styles.proceedBtnText} textColor="#ffffff" onPress={() => 
-                        navigation.navigate("SchemeDetails", {scheme: "silver", schemeId: "12", mobile: mobile || route?.params?.mobile })}> Know More </Button>                 
-                    </View>
-              </Card.Content>
-            </Card>
-          
-          {/* Kubera Virutcham Scheme */}
-            <Card style={styles.schemeCardHorizontal}>
-              <Image source={require("../android/assets/S3.jpeg")} style={styles.schemeImage} />
-              <Card.Content>
-                <View style={styles.actionRow}> 
-                <Text style={styles.schemeTitle}>Kubera Kadaksham</Text>                                     
-                      <Button mode="contained" style={styles.proceedBtn} labelStyle={styles.proceedBtnText} textColor="#ffffff" onPress={() => 
-                        navigation.navigate("SchemeDetails", {scheme: "kubrea", schemeId: "1", mobile: mobile || route?.params?.mobile })}> Know More </Button>                 
-                    </View>
-              </Card.Content>
-            </Card>
-
-            {/* Thanga Virutcham Scheme */}
-            <Card style={styles.schemeCardHorizontal}>
-              <Image source={require("../android/assets/S4.jpeg")} style={styles.schemeImage} />
-              <Card.Content>
-                <View style={styles.actionRow}>                      
-                <Text style={styles.schemeTitle}>Thanga Viruksham</Text>                    
-                      <Button mode="contained" style={styles.proceedBtn} labelStyle={styles.proceedBtnText} textColor="#ffffff" onPress={() => 
-                        navigation.navigate("SchemeDetails", {scheme: "TV", schemeId: "3", mobile: mobile || route?.params?.mobile })}> Know More </Button>                 
-                    </View>
-              </Card.Content>
-            </Card>
-
-            {/* Jewel Plus Plan */}
-            <Card style={styles.schemeCardHorizontal}>
-              <Image source={require("../android/assets/S5.jpeg")} style={styles.schemeImage} />
-
-              <Card.Content>
-                <View style={styles.actionRow}>                    
-                <Text style={styles.schemeTitle}>Jewel Plus</Text>                                         
-                      <Button mode="contained" style={styles.proceedBtn} labelStyle={styles.proceedBtnText} textColor="#ffffff" onPress={() => 
-                        navigation.navigate("SchemeDetails", {scheme: "JewelPlus", schemeId: "0", mobile: mobile || route?.params?.mobile })}> Know More </Button>                 
-                    </View>
-              </Card.Content>
-            </Card>
-
-            {/* Ponmagal Gold Scheme */}
-            <Card style={styles.schemeCardHorizontal}>
-              <Image source={require("../android/assets/S6.jpeg")} style={styles.schemeImage} />
-
-              <Card.Content>
-                <View style={styles.actionRow}>                    
-                <Text style={styles.schemeTitle}>Ponmagal Gold</Text>                    
-                      <Button mode="contained" style={styles.proceedBtn} labelStyle={styles.proceedBtnText} textColor="#ffffff" onPress={() => 
-                        navigation.navigate("SchemeDetails", {scheme: "PonGold", schemeId: "0", mobile: mobile || route?.params?.mobile })}> Know More </Button>                 
-                    </View>
-              </Card.Content>
-            </Card>
-
-            {/* Ponmagal Silver Scheme */}
-            <Card style={styles.schemeCardHorizontal}>
-              <Image source={require("../android/assets/S7.jpeg")} style={styles.schemeImage} />
-
+          <View style={styles.schemeList}>
+            {/* Digi Gold Scheme */}
+            <Card style={styles.schemeCardRow}>
+              <Image source={require('./assets/S1.png')} style={styles.schemeImage} />
               <Card.Content>
                 <View style={styles.actionRow}>
-                  <Text style={styles.schemeTitle}>Ponmagal Silver</Text>                    
-                      <Button mode="contained" style={styles.proceedBtn} labelStyle={styles.proceedBtnText} textColor="#ffffff" onPress={() => 
-                        navigation.navigate("SchemeDetails", {scheme: "PonSilver", schemeId: "0", mobile: mobile || route?.params?.mobile })}> Know More </Button>                 
-                    </View>
+                  <Text style={styles.schemeTitle}>DigiGold</Text>
+                  <Button mode="contained" style={styles.proceedBtn} labelStyle={styles.proceedBtnText} textColor="#ffffff" onPress={() =>
+                    navigation.navigate("SchemeDetails", {scheme: "gold", schemeId: "4", mobile: mobile || route?.params?.mobile })}> Know More </Button>
+                </View>
               </Card.Content>
             </Card>
 
-          </ScrollView>
-                        <Text style={{fontSize:16, fontWeight:"bold", color:"#6e0501", marginTop:8, textAlign:"center"}}>Our Products</Text>
-          {/* Bottom auto scroll banner */}
-          <View style={{ width: screenWidth, marginTop: 10, marginBottom: 10 }}>
-            <FlatList
-              ref={bottomBannerScroll}
-              data={bannerImages}
-              keyExtractor={(_, i) => i.toString()}
-              horizontal
-              pagingEnabled
-              scrollEnabled={false}
-              showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <Image
-                  source={item}
-                  style={{ width: screenWidth, height: screenWidth, resizeMode: "contain" }}
-                />
-              )}
-            />
-          </View>
+            {/* Digi Silver Scheme */}
+            <Card style={styles.schemeCardRow}>
+              <Image source={require('./assets/S2.png')} style={styles.schemeImage} />
+              <Card.Content>
+                <View style={styles.actionRow}>
+                  <Text style={styles.schemeTitle}>DigiSilver</Text>
+                  <Button mode="contained" style={styles.proceedBtn} labelStyle={styles.proceedBtnText} textColor="#ffffff" onPress={() =>
+                    navigation.navigate("SchemeDetails", {scheme: "silver", schemeId: "5", mobile: mobile || route?.params?.mobile })}> Know More </Button>
+                </View>
+              </Card.Content>
+            </Card>
 
+            {/* Aishwarya Scheme */}
+            <Card style={styles.schemeCardRow}>
+              <Image source={require('./assets/S3.png')} style={styles.schemeImage} />
+              <Card.Content>
+                <View style={styles.actionRow}>
+                  <Text style={styles.schemeTitle}>Aishwarya Lakshmi</Text>
+                  <Button mode="contained" style={styles.proceedBtn} labelStyle={styles.proceedBtnText} textColor="#ffffff" onPress={() =>
+                    navigation.navigate("SchemeDetails", {scheme: "aishwaryam", schemeId: "6", mobile: mobile || route?.params?.mobile })}> Know More </Button>
+                </View>
+              </Card.Content>
+            </Card>
+
+            {/* Swarna Lakshmi Scheme */}
+            <Card style={styles.schemeCardRow}>
+              <Image source={require('./assets/S4.png')} style={styles.schemeImage} />
+              <Card.Content>
+                <View style={styles.actionRow}>
+                  <Text style={styles.schemeTitle}>Swarna Lakshmi</Text>
+                  <Button mode="contained" style={styles.proceedBtn} labelStyle={styles.proceedBtnText} textColor="#ffffff" onPress={() =>
+                    navigation.navigate("SchemeDetails", {scheme: "swarna", schemeId: "7", mobile: mobile || route?.params?.mobile })}> Know More </Button>
+                </View>
+              </Card.Content>
+            </Card>
+          </View>
+                        
       </View>
   </ScrollView>           
   )
@@ -343,7 +283,7 @@ function AboutScreen({ route }) {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#fff" }} showsVerticalScrollIndicator={false}>
       <View style={{ alignItems: "center" }}>
-        <Image source={require("../android/assets/home.jpg")} style={{ width: "100%", height: 200, resizeMode: "cover" }} />
+        <Image source={{uri: 'https://placehold.co/800x200/660606/ffffff?text=RKP+Jewellery'}} style={{ width: "100%", height: 200, resizeMode: "cover" }} />
       </View>
       <View style={{ padding: 20 }}>
         <Text style={{ fontSize: 22, fontWeight: "bold", color: "#6e0501", textAlign: "center", marginBottom: 4 }}>RKP JEWELLERY</Text>
@@ -895,6 +835,18 @@ proceedBtn: {
 proceedBtnText: {
   fontSize: 11,
   marginVertical: 0,
+},
+schemeList: {
+  width: "100%",
+  paddingHorizontal: 10,
+  marginBottom: 10,
+},
+schemeCardRow: {
+  width: "100%",
+  borderRadius: 12,
+  backgroundColor: "#ffffff",
+  elevation: 4,
+  marginBottom: 14,
 },
 schemeCardHorizontal: {
   width: screenWidth - 40,   
