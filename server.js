@@ -7,13 +7,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ RAILWAY DATABASE CONFIGURATION
-const config = {
+const dbConfig = {
   user: process.env.DB_USER || "db_ac6cf3_rkp_admin",
   password: process.env.DB_PASSWORD || "Rkp@2026",
   server: process.env.DB_SERVER || "sql5105.site4now.net",
   database: process.env.DB_NAME || "db_ac6cf3_rkp",
   port: parseInt(process.env.DB_PORT) || 1433,
+  pool: { max: 10, min: 0, idleTimeoutMillis: 30000 },
   options: {
     encrypt: false,
     trustServerCertificate: true,
@@ -22,79 +22,81 @@ const config = {
   }
 };
 
-// ✅ CONNECT TO DATABASE WITH RETRY LOGIC
+let pool = null;
+
+const getPool = async () => {
+  if (pool && pool.connected) return pool;
+  pool = await new sql.ConnectionPool(dbConfig).connect();
+  pool.on("error", err => {
+    console.error("❌ Pool error:", err.message);
+    pool = null;
+  });
+  console.log("✅ Database pool connected at", new Date().toISOString());
+  return pool;
+};
+
 const connectToDatabase = async () => {
   try {
-    await sql.connect(config);
-    console.log("✅ Database connected successfully at", new Date().toISOString());
+    await getPool();
   } catch (err) {
     console.error("❌ Database connection failed:", err.message);
-    console.log("⚠️ Retrying database connection in 5 seconds...");
     setTimeout(connectToDatabase, 5000);
   }
 };
 
-// Initialize database connection
 connectToDatabase();
 
-// ✅ HEALTH CHECK ENDPOINT (Railway requires this for load balancer)
+// HEALTH CHECK
 app.get("/health", (req, res) => {
-  res.status(200).json({ 
-    status: "✅ Server is running", 
+  res.status(200).json({
+    status: "✅ Server is running",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "development"
   });
 });
 
-// ✅ DATABASE STATUS ENDPOINT
+// DB STATUS
 app.get("/db-status", async (req, res) => {
   try {
-    const result = await sql.query("SELECT 1 as test");
-    res.json({ 
-      status: "✅ Database connected", 
-      test: result.recordset,
-      timestamp: new Date().toISOString()
-    });
+    const p = await getPool();
+    const result = await p.request().query("SELECT 1 as test");
+    res.json({ status: "✅ Database connected", test: result.recordset, timestamp: new Date().toISOString() });
   } catch (err) {
-    res.status(503).json({ 
-      status: "❌ Database error", 
-      error: err.message,
-      timestamp: new Date().toISOString()
-    });
+    res.status(503).json({ status: "❌ Database error", error: err.message });
   }
 });
 
 // SEND OTP
 app.post("/sendotp", async (req, res) => {
   const mobile = req.body.mobile;
-  const otp = Math.floor(100000 + Math.random() * 900000); 
-
-  try {await sql.query `INSERT INTO OTPLOGIN (MOBILENO, OTP) VALUES (${mobile}, ${otp})`;
+  const otp = Math.floor(100000 + Math.random() * 900000);
+  try {
+    const p = await getPool();
+    await p.request()
+      .input("mobile", sql.NVarChar, mobile)
+      .input("otp", sql.Int, otp)
+      .query("INSERT INTO OTPLOGIN (MOBILENO, OTP) VALUES (@mobile, @otp)");
     const message = encodeURIComponent(`Dear Customer, Your Admin Login OTP is ${otp}. Please do not share this OTP. Regards, RKP Jewellery, Contact : 8300455155, 7598439019`);
     const smsurl = `http://smsssl.dial4sms.com/api/v2/SendSMS?SenderId=GSTMAL&Message=${message}&MobileNumbers=${mobile}&TemplateId=1107177331753219594&ApiKey=oTnpvYW0SZHzTnZMMGRTduZiWgmeeLsNgih73EcB5uQ=&ClientId=00c75859-dcde-4119-b9eb-706300d04a5b`;
     await axios.get(smsurl);
-    res.json({
-      success: true,
-      message: "OTP Sent",
-      otp: otp
-    });
+    res.json({ success: true, message: "OTP Sent", otp });
   } catch (err) {
     console.log(err);
     res.json({ success: false });
   }
 });
 
-//verify OTP
+// VERIFY OTP
 app.post("/verifyotp", async (req, res) => {
   const { mobile, otp } = req.body;
-  const otpInt = parseInt(otp, 10);
   try {
-    const result = await sql.query`
-      SELECT TOP 1 * FROM OTPLOGIN
-      WHERE MOBILENO = ${mobile} AND OTP = ${otpInt} ORDER BY id DESC`;
-
+    const p = await getPool();
+    const result = await p.request()
+      .input("mobile", sql.NVarChar, mobile)
+      .input("otp", sql.Int, parseInt(otp, 10))
+      .query("SELECT TOP 1 * FROM OTPLOGIN WHERE MOBILENO = @mobile AND OTP = @otp ORDER BY id DESC");
     if (result.recordset.length > 0) {
-      await sql.query`DELETE FROM OTPLOGIN WHERE MOBILENO = ${mobile}`;
+      await p.request().input("mobile", sql.NVarChar, mobile).query("DELETE FROM OTPLOGIN WHERE MOBILENO = @mobile");
       res.json({ success: true });
     } else {
       res.json({ success: false });
@@ -105,46 +107,44 @@ app.post("/verifyotp", async (req, res) => {
   }
 });
 
-
-
-
-// Login
+// LOGIN
 app.post("/loginpassword", async (req, res) => {
   const { mobile, password } = req.body;
   try {
-    const result = await sql.query`
-      SELECT TOP 1 Mobile FROM Customers WHERE Mobile = ${mobile} AND Password = ${password}`;
-    if (result.recordset.length > 0) {
-      res.json({ success: true });
-    } else {
-      res.json({ success: false });
-    }
+    const p = await getPool();
+    const result = await p.request()
+      .input("mobile", sql.NVarChar, mobile)
+      .input("password", sql.NVarChar, password)
+      .query("SELECT TOP 1 Mobile FROM Customers WHERE Mobile = @mobile AND Password = @password");
+    res.json({ success: result.recordset.length > 0 });
   } catch (err) {
     console.log(err);
     res.json({ success: false });
   }
 });
 
-//add customer
+// ADD CUSTOMER
 app.post("/addCustomer", async (req, res) => {
   const { CustomerName, StreetName, Area, City, State, Mobile, Password, Empid, Location } = req.body;
   try {
-    await sql.connect(config);
-    const checkMobile = await sql.query`SELECT TOP 1 Mobile FROM Customers WHERE Mobile = ${Mobile}`;
-    if (checkMobile.recordset.length > 0) {
-      await sql.query`DELETE FROM Customers WHERE Mobile = ${Mobile}`;
+    const p = await getPool();
+    const check = await p.request().input("Mobile", sql.NVarChar, Mobile).query("SELECT TOP 1 Mobile FROM Customers WHERE Mobile = @Mobile");
+    if (check.recordset.length > 0) {
+      await p.request().input("Mobile", sql.NVarChar, Mobile).query("DELETE FROM Customers WHERE Mobile = @Mobile");
     }
-    const insertReq = new sql.Request();
-    insertReq.input('CustomerName', sql.NVarChar, CustomerName);
-    insertReq.input('StreetName', sql.NVarChar, StreetName);
-    insertReq.input('Area', sql.NVarChar, Area);
-    insertReq.input('City', sql.NVarChar, City);
-    insertReq.input('State', sql.NVarChar, State);
-    insertReq.input('Mobile', sql.NVarChar, Mobile);
-    insertReq.input('Password', sql.NVarChar, Password);
-    insertReq.input('Empid', sql.NVarChar, Empid || '');
-    insertReq.input('Location', sql.NVarChar, Location || '');
-    await insertReq.query(`INSERT INTO Customers (CustomerName, StreetName, Area, City, State, Mobile, Password, Empid, Location, RDATE) VALUES (@CustomerName, @StreetName, @Area, @City, @State, @Mobile, @Password, @Empid, @Location, CONVERT(DATE, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'))`);
+    await p.request()
+      .input("CustomerName", sql.NVarChar, CustomerName)
+      .input("StreetName", sql.NVarChar, StreetName)
+      .input("Area", sql.NVarChar, Area)
+      .input("City", sql.NVarChar, City)
+      .input("State", sql.NVarChar, State)
+      .input("Mobile", sql.NVarChar, Mobile)
+      .input("Password", sql.NVarChar, Password)
+      .input("Empid", sql.NVarChar, Empid || "")
+      .input("Location", sql.NVarChar, Location || "")
+      .query(`INSERT INTO Customers (CustomerName, StreetName, Area, City, State, Mobile, Password, Empid, Location, RDATE)
+              VALUES (@CustomerName, @StreetName, @Area, @City, @State, @Mobile, @Password, @Empid, @Location,
+              CONVERT(DATE, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'))`);
     res.send({ status: "success" });
   } catch (err) {
     console.log(err);
@@ -152,26 +152,27 @@ app.post("/addCustomer", async (req, res) => {
   }
 });
 
-//get Customer Details
+// GET CUSTOMER PROFILE
 app.get("/customerprofile", async (req, res) => {
-  const mobile = req.query.mobile;
   try {
-    await sql.connect(config);
-    const result = await sql.query`
-      SELECT CustomerName, StreetName, Area, City, State, Mobile FROM Customers WHERE Mobile = ${mobile} `;
+    const p = await getPool();
+    const result = await p.request()
+      .input("mobile", sql.NVarChar, req.query.mobile)
+      .query("SELECT CustomerName, StreetName, Area, City, State, Mobile FROM Customers WHERE Mobile = @mobile");
     res.send(result.recordset);
   } catch (err) {
     console.log(err);
+    res.send([]);
   }
 });
 
-//check customer exists by mobile
+// CHECK CUSTOMER
 app.get("/checkcustomer", async (req, res) => {
-  const mobile = req.query.mobile;
   try {
-    await sql.connect(config);
-    const result = await sql.query`
-      SELECT CustomerName, StreetName, Area, City, State, Mobile FROM Customers WHERE Mobile = ${mobile}`;
+    const p = await getPool();
+    const result = await p.request()
+      .input("mobile", sql.NVarChar, req.query.mobile)
+      .query("SELECT CustomerName, StreetName, Area, City, State, Mobile FROM Customers WHERE Mobile = @mobile");
     if (result.recordset.length > 0) {
       res.json({ exists: true, customer: result.recordset[0] });
     } else {
@@ -183,393 +184,288 @@ app.get("/checkcustomer", async (req, res) => {
   }
 });
 
-//get scheme details
+// LOAD SCHEME
 app.get("/loadscheme", async (req, res) => {
-  const schemename = req.query.schemename; // ✅ FIXED
-
   try {
-    await sql.connect(config);
-    const result = await sql.query`
-      SELECT schemeName, groupcode + '-' + convert(varchar, regno) as accno, weightledger, MetalType, FixedIns,
-      (SELECT TOP 1 SRATE AS RATE FROM RATEMAST AS M WHERE RATEGROUP = (SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE = M.RDATE) AND METALID='G' AND PURITY='91.6' ORDER BY SNO DESC) AS GOLDRATE,
-      (SELECT TOP 1 SRATE AS RATE FROM RATEMAST AS M WHERE RATEGROUP = (SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE = M.RDATE) AND METALID='S' AND PURITY='91.6' ORDER BY SNO DESC) AS SILVERRATE
-       FROM scheme WHERE schemeid = ${schemename}`;
+    const p = await getPool();
+    const result = await p.request()
+      .input("schemename", sql.NVarChar, req.query.schemename)
+      .query(`SELECT schemeName, groupcode + '-' + convert(varchar, regno) as accno, weightledger, MetalType, FixedIns,
+        (SELECT TOP 1 SRATE FROM RATEMAST AS M WHERE RATEGROUP=(SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE=M.RDATE) AND METALID='G' AND PURITY='91.6' ORDER BY SNO DESC) AS GOLDRATE,
+        (SELECT TOP 1 SRATE FROM RATEMAST AS M WHERE RATEGROUP=(SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE=M.RDATE) AND METALID='S' AND PURITY='91.6' ORDER BY SNO DESC) AS SILVERRATE
+        FROM scheme WHERE schemeid = @schemename`);
     res.send(result.recordset);
   } catch (err) {
     console.log(err);
+    res.send([]);
   }
 });
 
-//get Customer ledger Details
+// CUSTOMER LEDGER DETAILS
 app.get("/customerLedgerDet", async (req, res) => {
-  const accno = req.query.accno;
-
   try {
-    await sql.connect(config);
-
-    const result = await sql.query`
-      SELECT CONVERT(VARCHAR,M.JOINDATE,105) AS DATE, S.SCHEMENAME AS schemename,(MAX(T.INSTALLMENT) + 1) AS UNPAID, P.PNAME AS customername, P.DOORNO + ', ' + P.ADDRESS1 AS StreetName, P.Area AS area, P.City AS city,
-      P.Mobile AS mobile FROM SCHEMEMAST M  LEFT JOIN SCHEME S ON S.SCHEMEID = M.SCHEMEID LEFT JOIN SCHPERSONALINFO P ON P.PERSONALID = M.SNO  LEFT JOIN SCHEMETRAN T ON T.GROUPCODE = M.GROUPCODE AND T.REGNO = M.REGNO AND ISNULL(T.CANCEL,'') = ''  
-      WHERE M.GROUPCODE + '-' + CONVERT(VARCHAR,M.REGNO) = ${accno} GROUP BY M.JOINDATE , S.Instalment, S.schemeName ,
-      P.PNAME, P.DOORNO , P.ADDRESS1 , P.AREA, P.CITY, P.MOBILE `;
-
-    res.send(result.recordset[0]);   // ⭐ FIX
-
+    const p = await getPool();
+    const result = await p.request()
+      .input("accno", sql.NVarChar, req.query.accno)
+      .query(`SELECT CONVERT(VARCHAR,M.JOINDATE,105) AS DATE, S.SCHEMENAME AS schemename,
+        (MAX(T.INSTALLMENT) + 1) AS UNPAID, P.PNAME AS customername,
+        P.DOORNO + ', ' + P.ADDRESS1 AS StreetName, P.Area AS area, P.City AS city, P.Mobile AS mobile
+        FROM SCHEMEMAST M
+        LEFT JOIN SCHEME S ON S.SCHEMEID = M.SCHEMEID
+        LEFT JOIN SCHPERSONALINFO P ON P.PERSONALID = M.SNO
+        LEFT JOIN SCHEMETRAN T ON T.GROUPCODE = M.GROUPCODE AND T.REGNO = M.REGNO AND ISNULL(T.CANCEL,'') = ''
+        WHERE M.GROUPCODE + '-' + CONVERT(VARCHAR,M.REGNO) = @accno
+        GROUP BY M.JOINDATE, S.Instalment, S.schemeName, P.PNAME, P.DOORNO, P.ADDRESS1, P.AREA, P.CITY, P.MOBILE`);
+    res.send(result.recordset[0]);
   } catch (err) {
     console.log(err);
+    res.send(null);
   }
 });
 
-//get Customer payment screen Details
+// CUSTOMER PAYMENT DETAILS
 app.get("/customerPayment", async (req, res) => {
-  const accno = req.query.accno;
-
   try {
-    await sql.connect(config);
-
-    const result = await sql.query`
-    SELECT CONVERT(VARCHAR,M.JOINDATE,105) AS DATE, S.SCHEMENAME, S.INSTALMENT,  S.WEIGHTLEDGER , CASE WHEN S.METALTYPE = 'G' THEN 'GOLD' ELSE 'SILVER' END AS METALTYPE,
-      (SELECT TOP 1 RDATE FROM SCHEMETRAN WHERE ISNULL(CANCEL,'') = '' AND GROUPCODE = M.GROUPCODE AND REGNO = M.REGNO ORDER BY RDATE DESC) LASTTRANDATE, 
-      (SELECT TOP 1 INSTALLMENT FROM SCHEMETRAN WHERE ISNULL(CANCEL,'') = '' AND GROUPCODE = M.GROUPCODE AND REGNO = M.REGNO ORDER BY RDATE DESC) LASTINS, 
-      CASE WHEN S.FIXEDINS = 'N' THEN 0 ELSE (SELECT DISTINCT AMOUNT FROM SCHEMETRAN WHERE ISNULL(CANCEL,'') = '' AND GROUPCODE = M.GROUPCODE AND REGNO = M.REGNO ) END AS AMOUNT,
-      (SELECT TOP 1 SRATE AS RATE FROM RATEMAST AS M WHERE RATEGROUP = (SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE = M.RDATE) AND METALID='G' AND PURITY='91.6' ORDER BY SNO DESC) AS GOLDRATE,
-      (SELECT TOP 1 SRATE AS RATE FROM RATEMAST AS M WHERE RATEGROUP = (SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE = M.RDATE) AND METALID='S' AND PURITY='91.6' ORDER BY SNO DESC) AS SILVERRATE
-      FROM SCHEMEMAST M  LEFT JOIN SCHEME S ON S.SCHEMEID = M.SCHEMEID LEFT JOIN SCHPERSONALINFO P ON P.PERSONALID = M.SNO 
-      WHERE M.GROUPCODE + '-' + CONVERT(VARCHAR,M.REGNO) = ${accno} `;     
-    
-    res.send(result.recordset[0]);   
-
+    const p = await getPool();
+    const result = await p.request()
+      .input("accno", sql.NVarChar, req.query.accno)
+      .query(`SELECT CONVERT(VARCHAR,M.JOINDATE,105) AS DATE, S.SCHEMENAME, S.INSTALMENT, S.WEIGHTLEDGER,
+        CASE WHEN S.METALTYPE = 'G' THEN 'GOLD' ELSE 'SILVER' END AS METALTYPE,
+        (SELECT TOP 1 RDATE FROM SCHEMETRAN WHERE ISNULL(CANCEL,'')='' AND GROUPCODE=M.GROUPCODE AND REGNO=M.REGNO ORDER BY RDATE DESC) LASTTRANDATE,
+        (SELECT TOP 1 INSTALLMENT FROM SCHEMETRAN WHERE ISNULL(CANCEL,'')='' AND GROUPCODE=M.GROUPCODE AND REGNO=M.REGNO ORDER BY RDATE DESC) LASTINS,
+        CASE WHEN S.FIXEDINS='N' THEN 0 ELSE (SELECT DISTINCT AMOUNT FROM SCHEMETRAN WHERE ISNULL(CANCEL,'')='' AND GROUPCODE=M.GROUPCODE AND REGNO=M.REGNO) END AS AMOUNT,
+        (SELECT TOP 1 SRATE FROM RATEMAST AS M WHERE RATEGROUP=(SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE=M.RDATE) AND METALID='G' AND PURITY='91.6' ORDER BY SNO DESC) AS GOLDRATE,
+        (SELECT TOP 1 SRATE FROM RATEMAST AS M WHERE RATEGROUP=(SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE=M.RDATE) AND METALID='S' AND PURITY='91.6' ORDER BY SNO DESC) AS SILVERRATE
+        FROM SCHEMEMAST M
+        LEFT JOIN SCHEME S ON S.SCHEMEID = M.SCHEMEID
+        LEFT JOIN SCHPERSONALINFO P ON P.PERSONALID = M.SNO
+        WHERE M.GROUPCODE + '-' + CONVERT(VARCHAR,M.REGNO) = @accno`);
+    res.send(result.recordset[0]);
   } catch (err) {
     console.log(err);
+    res.send(null);
   }
 });
 
-
-//get Customer Account
+// GET CUSTOMER ACCOUNTS
 app.get("/getCustomerAccount", async (req, res) => {
-  const mobile = req.query.mobile;
   try {
-    await sql.connect(config);
-    const result = await sql.query`
-     select S.SCHEMENAME, M.GROUPCODE + '-' + CONVERT(VARCHAR,M.REGNO) ACCNO, CONVERT(VARCHAR,JOINDATE,105) AS JOINDATE, 
-    (CASE WHEN ISNULL(DOCLOSE,'') = '' THEN 'ACTIVE' ELSE 'CLOSED' END)  STATUS, 
-    (SELECT COUNT(*) FROM SCHEMETRAN T WHERE GROUPCODE = M.GROUPCODE AND REGNO = M.REGNO AND ISNULL(CANCEL,'') = '') TOTALINS,
-    CONVERT(VARCHAR,DATEADD(day, 365, JOINDATE),105) AS LASTRECDATE, 
-    (SELECT COUNT(*) FROM SCHEMETRAN WHERE GROUPCODE = M.GROUPCODE AND REGNO = M.REGNO AND ISNULL(CANCEL,'') = '' AND MONTH(RDATE) = MONTH(CONVERT(DATE, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time')) AND YEAR(RDATE) = YEAR(CONVERT(DATE, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'))) AS PAIDTHISMONTH,
-    (SELECT SUM(AMOUNT) FROM SCHEMETRAN T WHERE GROUPCODE = M.GROUPCODE AND REGNO = M.REGNO AND ISNULL(CANCEL,'') = '') AMOUNT, 
-    (SELECT CONVERT(NUMERIC(15,3),SUM(WEIGHT)) AS WE FROM SCHEMETRAN T WHERE GROUPCODE = M.GROUPCODE AND REGNO = M.REGNO AND ISNULL(CANCEL,'') = '') WEIGHT,
-    CONVERT(VARCHAR,(SELECT TOP 1 RDATE FROM SCHEMETRAN WHERE GROUPCODE = M.GROUPCODE AND REGNO = M.REGNO AND ISNULL(CANCEL,'') = '' ORDER BY RDATE DESC),105) AS LASTTRANDATE
-    from SCHEMEMAST M
-    LEFT JOIN SCHEME S ON S.SCHEMEID = M.SCHEMEID WHERE M.SNO IN (SELECT PERSONALID FROM SCHPERSONALINFO WHERE MOBILE =  ${mobile}) ORDER BY M.JOINDATE DESC `;
+    const p = await getPool();
+    const result = await p.request()
+      .input("mobile", sql.NVarChar, req.query.mobile)
+      .query(`SELECT S.SCHEMENAME, M.GROUPCODE+'-'+CONVERT(VARCHAR,M.REGNO) ACCNO,
+        CONVERT(VARCHAR,JOINDATE,105) AS JOINDATE,
+        (CASE WHEN ISNULL(DOCLOSE,'')='' THEN 'ACTIVE' ELSE 'CLOSED' END) STATUS,
+        (SELECT COUNT(*) FROM SCHEMETRAN T WHERE GROUPCODE=M.GROUPCODE AND REGNO=M.REGNO AND ISNULL(CANCEL,'')='') TOTALINS,
+        CONVERT(VARCHAR,DATEADD(day,365,JOINDATE),105) AS LASTRECDATE,
+        (SELECT COUNT(*) FROM SCHEMETRAN WHERE GROUPCODE=M.GROUPCODE AND REGNO=M.REGNO AND ISNULL(CANCEL,'')=''
+          AND MONTH(RDATE)=MONTH(CONVERT(DATE,GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'))
+          AND YEAR(RDATE)=YEAR(CONVERT(DATE,GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'))) AS PAIDTHISMONTH,
+        (SELECT SUM(AMOUNT) FROM SCHEMETRAN T WHERE GROUPCODE=M.GROUPCODE AND REGNO=M.REGNO AND ISNULL(CANCEL,'')='') AMOUNT,
+        (SELECT CONVERT(NUMERIC(15,3),SUM(WEIGHT)) FROM SCHEMETRAN T WHERE GROUPCODE=M.GROUPCODE AND REGNO=M.REGNO AND ISNULL(CANCEL,'')='') WEIGHT,
+        CONVERT(VARCHAR,(SELECT TOP 1 RDATE FROM SCHEMETRAN WHERE GROUPCODE=M.GROUPCODE AND REGNO=M.REGNO AND ISNULL(CANCEL,'')='' ORDER BY RDATE DESC),105) AS LASTTRANDATE
+        FROM SCHEMEMAST M
+        LEFT JOIN SCHEME S ON S.SCHEMEID=M.SCHEMEID
+        WHERE M.SNO IN (SELECT PERSONALID FROM SCHPERSONALINFO WHERE MOBILE=@mobile)
+        ORDER BY M.JOINDATE DESC`);
     res.send(result.recordset);
   } catch (err) {
     console.log(err);
+    res.send([]);
   }
 });
 
-//get Customer Account
+// LEDGER
 app.get("/ledger", async (req, res) => {
-  const accno = req.query.accno;
   try {
-    await sql.connect(config);
-    const result = await sql.query`
-      SELECT INSTALLMENT, CONVERT(VARCHAR,RDATE,105) AS DATE, RECEIPTNO, AMOUNT, RATE, WEIGHT, ISNULL(BonusWeight,0) AS BONUSWEIGHT FROM SCHEMETRAN WHERE ISNULL(CANCEL,'') = '' AND GROUPCODE + '-' + CONVERT(VARCHAR,REGNO) = ${accno} ORDER BY RDATE`;
+    const p = await getPool();
+    const result = await p.request()
+      .input("accno", sql.NVarChar, req.query.accno)
+      .query(`SELECT INSTALLMENT, CONVERT(VARCHAR,RDATE,105) AS DATE, RECEIPTNO, AMOUNT, RATE, WEIGHT,
+        ISNULL(BonusWeight,0) AS BONUSWEIGHT FROM SCHEMETRAN
+        WHERE ISNULL(CANCEL,'')='' AND GROUPCODE+'-'+CONVERT(VARCHAR,REGNO)=@accno ORDER BY RDATE`);
     res.send(result.recordset);
   } catch (err) {
     console.log(err);
+    res.send([]);
   }
 });
 
-
-//payment sucess and record store in sql table
-app.post("/payment-success", async (req, res) => {
-  const Razorpay = require("razorpay");
-
-  const razorpay = new Razorpay({
-    key_id: "rzp_test_SxRh2Udirr1XPt",
-    key_secret: ""
-  });
-
-  const {
-    payment_id,
-    order_id,
-    amount,
-    accno,
-    metal,
-    rate,
-    weight,
-    installment,
-    customername,
-    address,
-    area,
-    city,
-    mobile,
-    bonus,
-    payment_mode: req_payment_mode,
-    upi_id: req_upi_id
-  } = req.body;
-
-  console.log("✅ Payment Success Request Received:", { 
-    payment_id, 
-    accno, 
-    amount, 
-    weight, 
-    bonus: bonus ? bonus : "⚠️ BONUS IS NULL/ZERO" 
-  });
-
+// GOLD RATE
+app.get("/goldrate", async (req, res) => {
   try {
-    await sql.connect(config);
+    const p = await getPool();
+    const result = await p.request().query(`SELECT TOP 1 SRATE AS RATE FROM RATEMAST AS M
+      WHERE RATEGROUP=(SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE=M.RDATE) AND METALID='G' AND PURITY='91.6' ORDER BY SNO DESC`);
+    res.json(result.recordset);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
-    // Use payment info from request body (no secret key needed)
-    const payment_mode = req_payment_mode || "upi";
-    const upi_id = req_upi_id || null;
-    const card_last4 = null;
-    const card_type = null;
+// SILVER RATE
+app.get("/silverrate", async (req, res) => {
+  try {
+    const p = await getPool();
+    const result = await p.request().query(`SELECT TOP 1 SRATE FROM RATEMAST AS M
+      WHERE RATEGROUP=(SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE=M.RDATE) AND METALID='S' AND PURITY='91.6' ORDER BY SNO DESC`);
+    res.json(result.recordset);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
-    // ✅ STORE IN PaymentTable
-    console.log("📝 Storing in PaymentTable with bonus:", bonus);
-    await sql.query`
-      INSERT INTO PaymentTable
-      (trandate,payment_id, order_id, amount, accno, metal, rate, weight, installment, payment_mode, upi_id, card_last4, card_type,customername,address,area,city,mobile,bonus)
-      VALUES
-      (CONVERT(DATE, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'),${payment_id}, ${order_id}, ${amount}, ${accno}, ${metal}, ${rate}, ${weight}, ${installment}, ${payment_mode}, ${upi_id}, ${card_last4},${card_type}, ${customername},${address},${area},${city},${mobile},${bonus})
-    `;
+// PAYMENT SUCCESS
+app.post("/payment-success", async (req, res) => {
+  const { payment_id, order_id, amount, accno, metal, rate, weight, installment,
+    customername, address, area, city, mobile, bonus, payment_mode: pm, upi_id: uid } = req.body;
+  const payment_mode = pm || "upi";
+  const upi_id = uid || null;
+  try {
+    const p = await getPool();
+    await p.request()
+      .input("payment_id", sql.NVarChar, payment_id)
+      .input("order_id", sql.NVarChar, order_id)
+      .input("amount", sql.Decimal(18,2), amount)
+      .input("accno", sql.NVarChar, accno)
+      .input("metal", sql.NVarChar, metal)
+      .input("rate", sql.Decimal(18,2), rate)
+      .input("weight", sql.Decimal(18,3), weight)
+      .input("installment", sql.Int, installment)
+      .input("payment_mode", sql.NVarChar, payment_mode)
+      .input("upi_id", sql.NVarChar, upi_id)
+      .input("customername", sql.NVarChar, customername)
+      .input("address", sql.NVarChar, address)
+      .input("area", sql.NVarChar, area)
+      .input("city", sql.NVarChar, city)
+      .input("mobile", sql.NVarChar, mobile)
+      .input("bonus", sql.Decimal(18,3), bonus)
+      .query(`INSERT INTO PaymentTable (trandate,payment_id,order_id,amount,accno,metal,rate,weight,installment,payment_mode,upi_id,card_last4,card_type,customername,address,area,city,mobile,bonus)
+        VALUES (CONVERT(DATE,GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'),
+        @payment_id,@order_id,@amount,@accno,@metal,@rate,@weight,@installment,@payment_mode,@upi_id,NULL,NULL,@customername,@address,@area,@city,@mobile,@bonus)`);
 
-    console.log("✅ Stored in PaymentTable successfully");
+    await p.request().input("payment_id", sql.NVarChar, payment_id).query(`
+      INSERT INTO SCHEMETRAN (GROUPCODE,REGNO,AMOUNT,WEIGHT,RATE,RDATE,CANCEL,SYSTEMID,INSTALLMENT,EMPID,REMARKS,ENTREFNO,USERID,BonusWeight,APPVER,ST_ID,SNO,RECEIPTNO)
+      SELECT SUBSTRING(accno,1,CHARINDEX('-',accno)-1),SUBSTRING(accno,CHARINDEX('-',accno)+1,LEN(accno)),
+      AMOUNT,WEIGHT,RATE,CONVERT(DATE,GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'),
+      '',1,installment,1,payment_id,
+      'ON'+REPLACE(CONVERT(VARCHAR(10),GETDATE(),112)+CONVERT(VARCHAR(8),GETDATE(),108),':',''),
+      999,bonus,'ONL APP',
+      'ON'+REPLACE(CONVERT(VARCHAR(10),GETDATE(),112)+CONVERT(VARCHAR(8),GETDATE(),108),':',''),
+      'ON'+REPLACE(CONVERT(VARCHAR(10),GETDATE(),112)+CONVERT(VARCHAR(8),GETDATE(),108),':',''),
+      TRANID FROM PaymentTable WHERE payment_id=@payment_id`);
 
-    await sql.query`
-      INSERT INTO SCHEMETRAN (GROUPCODE, REGNO, AMOUNT, WEIGHT, RATE,  RDATE, CANCEL, SYSTEMID, INSTALLMENT, EMPID, 
-      REMARKS, ENTREFNO, USERID, BonusWeight, APPVER, ST_ID, SNO, RECEIPTNO)
-      SELECT  SUBSTRING(accno, 1, CHARINDEX('-', accno) - 1), SUBSTRING(accno, CHARINDEX('-', accno) + 1, LEN(accno)),
-      AMOUNT, WEIGHT, RATE, CONVERT(DATE, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'), '', 1, installment, 1, payment_id,'ON' + REPLACE(CONVERT(VARCHAR(10), GETDATE(), 112) + CONVERT(VARCHAR(8), GETDATE(), 108), ':', ''), 999, BONUS, 'ONL APP',
-      'ON' + REPLACE(CONVERT(VARCHAR(10), GETDATE(), 112) + CONVERT(VARCHAR(8), GETDATE(), 108), ':', ''),
-      'ON' + REPLACE(CONVERT(VARCHAR(10), GETDATE(), 112) + CONVERT(VARCHAR(8), GETDATE(), 108), ':', ''), TRANID FROM PaymentTable  WHERE payment_id = ${payment_id}`;
+    await p.request().input("payment_id", sql.NVarChar, payment_id).query(`
+      INSERT INTO SCHEMECOLLECT (GROUPCODE,REGNO,RECEIPTNO,RDATE,AMOUNT,MODEPAY,ACCODE,ENTREFNO,CANCEL,SYSTEMID,USERID,APPVER,TRANMODE,SC_ID,SNO,CHQ_CARDNO,CHQDATE,CHQBANK)
+      SELECT GROUPCODE,REGNO,RECEIPTNO,RDATE,AMOUNT,
+      (SELECT CASE WHEN PAYMENT_MODE='upi' THEN 'E' ELSE 'C' END FROM PAYMENTTABLE WHERE payment_id=@payment_id),
+      '0000001',ENTREFNO,'',SYSTEMID,999,'ONL APP','D',ST_ID,SNO,REMARKS,
+      CONVERT(DATE,GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'),
+      (SELECT upi_id FROM PAYMENTTABLE WHERE payment_id=@payment_id)
+      FROM SCHEMETRAN WHERE REMARKS=@payment_id`);
 
-    console.log("✅ Stored in SCHEMETRAN successfully");
-
-    await sql.query`
-      INSERT INTO SCHEMECOLLECT (GROUPCODE,REGNO,RECEIPTNO,RDATE,AMOUNT, MODEPAY,ACCODE,ENTREFNO,CANCEL,SYSTEMID,  
-      USERID,APPVER,TRANMODE,SC_ID,SNO,CHQ_CARDNO,CHQDATE,CHQBANK)
-      SELECT  GROUPCODE, REGNO, RECEIPTNO, RDATE, AMOUNT, (SELECT CASE WHEN PAYMENT_MODE = 'upi' THEN 'E' ELSE 'C' END FROM PAYMENTTABLE WHERE payment_id = ${payment_id}), 
-      '0000001', ENTREFNO, '', SYSTEMID, 999, 'ONL APP', 'D', ST_ID, SNO, REMARKS, CONVERT(DATE, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'), (SELECT ${upi_id} FROM PAYMENTTABLE WHERE payment_id = ${payment_id}) 
-      FROM SCHEMETRAN WHERE REMARKS = ${payment_id}`;
-
-    console.log("✅ Stored in SCHEMECOLLECT successfully");
-
-    res.json({
-      success: true,
-      payment_mode,
-      upi_id,
-      card_last4,
-      card_type
-    });
-
+    res.json({ success: true, payment_mode, upi_id });
   } catch (err) {
     console.log("❌ ERROR:", err);
     res.json({ success: false, error: err.message });
   }
 });
 
-// new scheme payment sucess
+// NEW SCHEME PAYMENT SUCCESS
 app.post("/newschpay-success", async (req, res) => {
-  const Razorpay = require("razorpay");
-
-  const razorpay = new Razorpay({
-    key_id: "rzp_test_SxRh2Udirr1XPt",
-    key_secret: ""
-  });
-
-  const {
-    payment_id,
-    order_id,
-    amount,
-    schemeid,
-    metal,
-    rate,
-    weight,
-    installment,
-    customername,
-    address,
-    area,
-    city,
-    mobile,
-    bonus,
-    payment_mode: req_payment_mode2,
-    upi_id: req_upi_id2
-  } = req.body;
-
-  console.log("✅ New Scheme Payment Request Received:", { 
-    payment_id, 
-    schemeid, 
-    amount, 
-    weight, 
-    bonus: bonus ? bonus : "⚠️ BONUS IS NULL/ZERO" 
-  });
-
+  const { payment_id, order_id, amount, schemeid, metal, rate, weight, installment,
+    customername, address, area, city, mobile, bonus, payment_mode: pm, upi_id: uid } = req.body;
+  const payment_mode = pm || "upi";
+  const upi_id = uid || null;
   try {
-    await sql.connect(config);
-
-    // Use payment info from request body (no secret key needed)
-    const payment_mode = req_payment_mode2 || "upi";
-    const upi_id = req_upi_id2 || null;
-    const card_last4 = null;
-    const card_type = null;
-
-    // ✅ Use SERIALIZABLE transaction to prevent duplicate REGNO
-    const pool = await sql.connect(config);
-    const transaction = new sql.Transaction(pool);
+    const p = await getPool();
+    const transaction = new sql.Transaction(p);
     await transaction.begin(sql.ISOLATION_LEVEL.SERIALIZABLE);
-
     try {
-      // Lock SCHEME row and read fresh REGNO inside transaction
-      const req1 = new sql.Request(transaction);
-      req1.input('schemeid', sql.NVarChar, schemeid);
-      const schemeRow = await req1.query(`SELECT GROUPCODE, REGNO FROM SCHEME WITH (UPDLOCK, ROWLOCK) WHERE SCHEMEID = @schemeid`);
+      const r1 = new sql.Request(transaction);
+      const schemeRow = await r1.input("schemeid", sql.NVarChar, schemeid)
+        .query("SELECT GROUPCODE, REGNO FROM SCHEME WITH (UPDLOCK, ROWLOCK) WHERE SCHEMEID = @schemeid");
       const groupcode = schemeRow.recordset[0].GROUPCODE;
       const regno = schemeRow.recordset[0].REGNO;
       const accno = `${groupcode}-${regno}`;
 
-      const req2 = new sql.Request(transaction);
-      req2.input('payment_id', sql.NVarChar, payment_id);
-      req2.input('order_id', sql.NVarChar, order_id);
-      req2.input('amount', sql.Decimal(18,2), amount);
-      req2.input('accno', sql.NVarChar, accno);
-      req2.input('schemeid', sql.NVarChar, schemeid);
-      req2.input('metal', sql.NVarChar, metal);
-      req2.input('rate', sql.Decimal(18,2), rate);
-      req2.input('weight', sql.Decimal(18,3), weight);
-      req2.input('installment', sql.Int, installment);
-      req2.input('payment_mode', sql.NVarChar, payment_mode);
-      req2.input('upi_id', sql.NVarChar, upi_id);
-      req2.input('card_last4', sql.NVarChar, card_last4);
-      req2.input('card_type', sql.NVarChar, card_type);
-      req2.input('customername', sql.NVarChar, customername);
-      req2.input('address', sql.NVarChar, address);
-      req2.input('area', sql.NVarChar, area);
-      req2.input('city', sql.NVarChar, city);
-      req2.input('mobile', sql.NVarChar, mobile);
-      req2.input('bonus', sql.Decimal(18,3), bonus);
-      await req2.query(`INSERT INTO PaymentTable (trandate,payment_id,order_id,amount,accno,metal,rate,weight,installment,payment_mode,upi_id,card_last4,card_type,customername,address,area,city,mobile,bonus) VALUES (CONVERT(DATE, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'),@payment_id,@order_id,@amount,@accno,@metal,@rate,@weight,@installment,@payment_mode,@upi_id,@card_last4,@card_type,@customername,@address,@area,@city,@mobile,@bonus)`);
+      await new sql.Request(transaction)
+        .input("payment_id", sql.NVarChar, payment_id)
+        .input("order_id", sql.NVarChar, order_id)
+        .input("amount", sql.Decimal(18,2), amount)
+        .input("accno", sql.NVarChar, accno)
+        .input("metal", sql.NVarChar, metal)
+        .input("rate", sql.Decimal(18,2), rate)
+        .input("weight", sql.Decimal(18,3), weight)
+        .input("installment", sql.Int, installment)
+        .input("payment_mode", sql.NVarChar, payment_mode)
+        .input("upi_id", sql.NVarChar, upi_id)
+        .input("customername", sql.NVarChar, customername)
+        .input("address", sql.NVarChar, address)
+        .input("area", sql.NVarChar, area)
+        .input("city", sql.NVarChar, city)
+        .input("mobile", sql.NVarChar, mobile)
+        .input("bonus", sql.Decimal(18,3), bonus)
+        .query(`INSERT INTO PaymentTable (trandate,payment_id,order_id,amount,accno,metal,rate,weight,installment,payment_mode,upi_id,card_last4,card_type,customername,address,area,city,mobile,bonus)
+          VALUES (CONVERT(DATE,GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'),
+          @payment_id,@order_id,@amount,@accno,@metal,@rate,@weight,@installment,@payment_mode,@upi_id,NULL,NULL,@customername,@address,@area,@city,@mobile,@bonus)`);
 
-      const req3 = new sql.Request(transaction);
-      req3.input('payment_id', sql.NVarChar, payment_id);
-      req3.input('bonus', sql.Decimal(18,3), bonus);
-      await req3.query(`INSERT INTO SCHEMETRAN (GROUPCODE,REGNO,AMOUNT,WEIGHT,RATE,RDATE,CANCEL,SYSTEMID,INSTALLMENT,EMPID,REMARKS,ENTREFNO,USERID,BonusWeight,APPVER,ST_ID,SNO,RECEIPTNO) SELECT SUBSTRING(accno,1,CHARINDEX('-',accno)-1),SUBSTRING(accno,CHARINDEX('-',accno)+1,LEN(accno)),AMOUNT,WEIGHT,RATE,CONVERT(DATE, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'),'',1,1,1,payment_id,'ON'+REPLACE(CONVERT(VARCHAR(10),GETDATE(),112)+CONVERT(VARCHAR(8),GETDATE(),108),':',''),999,@bonus,'ONL APP','ON'+REPLACE(CONVERT(VARCHAR(10),GETDATE(),112)+CONVERT(VARCHAR(8),GETDATE(),108),':',''),'ON'+REPLACE(CONVERT(VARCHAR(10),GETDATE(),112)+CONVERT(VARCHAR(8),GETDATE(),108),':',''),TRANID FROM PaymentTable WHERE payment_id=@payment_id`);
+      await new sql.Request(transaction).input("payment_id", sql.NVarChar, payment_id).input("bonus", sql.Decimal(18,3), bonus).query(`
+        INSERT INTO SCHEMETRAN (GROUPCODE,REGNO,AMOUNT,WEIGHT,RATE,RDATE,CANCEL,SYSTEMID,INSTALLMENT,EMPID,REMARKS,ENTREFNO,USERID,BonusWeight,APPVER,ST_ID,SNO,RECEIPTNO)
+        SELECT SUBSTRING(accno,1,CHARINDEX('-',accno)-1),SUBSTRING(accno,CHARINDEX('-',accno)+1,LEN(accno)),
+        AMOUNT,WEIGHT,RATE,CONVERT(DATE,GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'),
+        '',1,1,1,payment_id,
+        'ON'+REPLACE(CONVERT(VARCHAR(10),GETDATE(),112)+CONVERT(VARCHAR(8),GETDATE(),108),':',''),
+        999,@bonus,'ONL APP',
+        'ON'+REPLACE(CONVERT(VARCHAR(10),GETDATE(),112)+CONVERT(VARCHAR(8),GETDATE(),108),':',''),
+        'ON'+REPLACE(CONVERT(VARCHAR(10),GETDATE(),112)+CONVERT(VARCHAR(8),GETDATE(),108),':',''),
+        TRANID FROM PaymentTable WHERE payment_id=@payment_id`);
 
-      const req4 = new sql.Request(transaction);
-      req4.input('payment_id', sql.NVarChar, payment_id);
-      req4.input('upi_id', sql.NVarChar, upi_id);
-      await req4.query(`INSERT INTO SCHEMECOLLECT (GROUPCODE,REGNO,RECEIPTNO,RDATE,AMOUNT,MODEPAY,ACCODE,ENTREFNO,CANCEL,SYSTEMID,USERID,APPVER,TRANMODE,SC_ID,SNO,CHQ_CARDNO,CHQDATE,CHQBANK) SELECT GROUPCODE,REGNO,RECEIPTNO,RDATE,AMOUNT,(SELECT CASE WHEN PAYMENT_MODE='upi' THEN 'E' ELSE 'C' END FROM PAYMENTTABLE WHERE payment_id=@payment_id),'0000001',ENTREFNO,'',SYSTEMID,999,'ONL APP','D',ST_ID,SNO,REMARKS,CONVERT(DATE, GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'),@upi_id FROM SCHEMETRAN WHERE REMARKS=@payment_id`);
+      await new sql.Request(transaction).input("payment_id", sql.NVarChar, payment_id).input("upi_id", sql.NVarChar, upi_id).query(`
+        INSERT INTO SCHEMECOLLECT (GROUPCODE,REGNO,RECEIPTNO,RDATE,AMOUNT,MODEPAY,ACCODE,ENTREFNO,CANCEL,SYSTEMID,USERID,APPVER,TRANMODE,SC_ID,SNO,CHQ_CARDNO,CHQDATE,CHQBANK)
+        SELECT GROUPCODE,REGNO,RECEIPTNO,RDATE,AMOUNT,
+        (SELECT CASE WHEN PAYMENT_MODE='upi' THEN 'E' ELSE 'C' END FROM PAYMENTTABLE WHERE payment_id=@payment_id),
+        '0000001',ENTREFNO,'',SYSTEMID,999,'ONL APP','D',ST_ID,SNO,REMARKS,
+        CONVERT(DATE,GETDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'India Standard Time'),@upi_id
+        FROM SCHEMETRAN WHERE REMARKS=@payment_id`);
 
-      const req5 = new sql.Request(transaction);
-      req5.input('payment_id', sql.NVarChar, payment_id);
-      req5.input('customername', sql.NVarChar, customername);
-      req5.input('address', sql.NVarChar, address);
-      req5.input('area', sql.NVarChar, area);
-      req5.input('city', sql.NVarChar, city);
-      req5.input('mobile', sql.NVarChar, mobile);
-      await req5.query(`INSERT INTO SCHPERSONALINFO (PERSONALID,PNAME,SNAME,DOORNO,ADDRESS1,ADDRESS2,AREA,CITY,STATE,COUNTRY,PINCODE,MOBILE,NOMENI,EMAIL,APPVER,USERID) SELECT GROUPCODE+CONVERT(VARCHAR,REGNO)+CONVERT(VARCHAR,RECEIPTNO),@customername,'','',@address,'',@area,@city,'','','',@mobile,'','',APPVER,USERID FROM SCHEMETRAN WHERE REMARKS=@payment_id`);
+      await new sql.Request(transaction).input("payment_id", sql.NVarChar, payment_id).input("customername", sql.NVarChar, customername)
+        .input("address", sql.NVarChar, address).input("area", sql.NVarChar, area)
+        .input("city", sql.NVarChar, city).input("mobile", sql.NVarChar, mobile).query(`
+        INSERT INTO SCHPERSONALINFO (PERSONALID,PNAME,SNAME,DOORNO,ADDRESS1,ADDRESS2,AREA,CITY,STATE,COUNTRY,PINCODE,MOBILE,NOMENI,EMAIL,APPVER,USERID)
+        SELECT GROUPCODE+CONVERT(VARCHAR,REGNO)+CONVERT(VARCHAR,RECEIPTNO),@customername,'','',@address,'',@area,@city,'','','',@mobile,'','',APPVER,USERID
+        FROM SCHEMETRAN WHERE REMARKS=@payment_id`);
 
-      const req6 = new sql.Request(transaction);
-      req6.input('payment_id', sql.NVarChar, payment_id);
-      await req6.query(`INSERT INTO SCHEMEMAST (COMPANYID,SCHEMEID,GROUPCODE,REGNO,JOINDATE,IEMP,IGROUPCODE,IREGNO,HOMECOLLECT,REMARK,SIGNATUREPATH,USERID,OPENINGDATE,SNO,COSTID,TOTALINS,INTRO,TOTALQTY,APPVER,PREVILEGEID) SELECT 'GTM',(SELECT SCHEMEID FROM SCHEME WHERE GROUPCODE=T.GROUPCODE),GROUPCODE,REGNO,RDATE,0,'',0,'N','','',999,RDATE,GROUPCODE+CONVERT(VARCHAR,REGNO)+CONVERT(VARCHAR,RECEIPTNO),'',(SELECT Instalment FROM SCHEME WHERE GROUPCODE=T.GROUPCODE),0,1,APPVER,0 FROM SCHEMETRAN T WHERE REMARKS=@payment_id`);
+      await new sql.Request(transaction).input("payment_id", sql.NVarChar, payment_id).query(`
+        INSERT INTO SCHEMEMAST (COMPANYID,SCHEMEID,GROUPCODE,REGNO,JOINDATE,IEMP,IGROUPCODE,IREGNO,HOMECOLLECT,REMARK,SIGNATUREPATH,USERID,OPENINGDATE,SNO,COSTID,TOTALINS,INTRO,TOTALQTY,APPVER,PREVILEGEID)
+        SELECT 'GTM',(SELECT SCHEMEID FROM SCHEME WHERE GROUPCODE=T.GROUPCODE),GROUPCODE,REGNO,RDATE,0,'',0,'N','','',999,RDATE,
+        GROUPCODE+CONVERT(VARCHAR,REGNO)+CONVERT(VARCHAR,RECEIPTNO),'',(SELECT Instalment FROM SCHEME WHERE GROUPCODE=T.GROUPCODE),0,1,APPVER,0
+        FROM SCHEMETRAN T WHERE REMARKS=@payment_id`);
 
-      const req7 = new sql.Request(transaction);
-      req7.input('payment_id', sql.NVarChar, payment_id);
-      await req7.query(`UPDATE SCHEME SET REGNO=REGNO+1 WHERE GROUPCODE IN (SELECT GROUPCODE FROM SCHEMETRAN T WHERE REMARKS=@payment_id)`);
+      await new sql.Request(transaction).input("payment_id", sql.NVarChar, payment_id).query(`
+        UPDATE SCHEME SET REGNO=REGNO+1 WHERE GROUPCODE IN (SELECT GROUPCODE FROM SCHEMETRAN T WHERE REMARKS=@payment_id)`);
 
       await transaction.commit();
-      console.log('✅ Transaction committed successfully');
-      res.json({ success: true, payment_mode, upi_id, card_last4, card_type });
-
+      res.json({ success: true, payment_mode, upi_id });
     } catch (innerErr) {
       await transaction.rollback();
-      console.log('❌ Transaction rolled back:', innerErr.message);
+      console.log("❌ Transaction rolled back:", innerErr.message);
       res.json({ success: false, error: innerErr.message });
     }
-
   } catch (err) {
     console.log("❌ ERROR newschpay:", err.message);
     res.json({ success: false, error: err.message });
   }
 });
 
-
-//get gold rate
-app.get("/goldrate", async (req, res) => {
-  try {
-    const result = await sql.query(`SELECT TOP 1 SRATE AS RATE FROM RATEMAST AS M WHERE RATEGROUP = (SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE = M.RDATE) AND METALID='G' AND PURITY='91.6' ORDER BY SNO DESC`);
-    res.json(result.recordset);
-  } 
-  catch (err) {
-    console.log(err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-  //get silver rate
-  app.get("/silverrate", async (req, res) => {
-    try {
-      const result = await sql.query(`SELECT TOP 1 SRATE FROM RATEMAST AS M WHERE RATEGROUP = (SELECT MAX(RATEGROUP) FROM RATEMAST WHERE RDATE = M.RDATE) AND METALID='S' AND PURITY='91.6' ORDER BY SNO DESC`);
-      res.json(result.recordset);
-    } catch (err) {
-      console.log(err);
-      res.status(500).json({ error: err.message });
-    }
-  });
-
 const PORT = process.env.PORT || 3000;
-const NODE_ENV = process.env.NODE_ENV || "development";
-
 const server = app.listen(PORT, "0.0.0.0", () => {
-  console.log(`
-╔════════════════════════════════════════════╗
-║   🚀 SERVER STARTED SUCCESSFULLY           ║
-╠════════════════════════════════════════════╣
-║  Port: ${PORT}                                │
-║  Environment: ${NODE_ENV}                    │
-║  URL: http://0.0.0.0:${PORT}                 │
-║  Time: ${new Date().toISOString()}         │
-╚════════════════════════════════════════════╝
-  `);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
 
-// ✅ GRACEFUL SHUTDOWN FOR RAILWAY
-process.on("SIGTERM", async () => {
-  console.log("⚠️ SIGTERM received, shutting down gracefully...");
-  server.close(async () => {
-    console.log("✅ Server closed");
-    try {
-      await sql.close();
-      console.log("✅ Database connection closed");
-    } catch (err) {
-      console.error("Error closing database:", err.message);
-    }
-    process.exit(0);
-  });
-});
-
-process.on("SIGINT", async () => {
-  console.log("⚠️ SIGINT received, shutting down gracefully...");
-  server.close(async () => {
-    console.log("✅ Server closed");
-    try {
-      await sql.close();
-      console.log("✅ Database connection closed");
-    } catch (err) {
-      console.error("Error closing database:", err.message);
-    }
-    process.exit(0);
-  });
-});
-
-// ✅ UNHANDLED REJECTION HANDLER
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
-});
-
-// ✅ UNCAUGHT EXCEPTION HANDLER
-process.on("uncaughtException", (error) => {
-  console.error("❌ Uncaught Exception:", error);
-  process.exit(1);
-});
+process.on("SIGTERM", () => server.close(async () => { if (pool) await pool.close(); process.exit(0); }));
+process.on("SIGINT",  () => server.close(async () => { if (pool) await pool.close(); process.exit(0); }));
+process.on("unhandledRejection", (reason) => console.error("❌ Unhandled Rejection:", reason));
+process.on("uncaughtException", (error) => { console.error("❌ Uncaught Exception:", error); process.exit(1); });
