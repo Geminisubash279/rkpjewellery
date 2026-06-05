@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { BASE_URL } from '../config';
+import { BASE_URL, safeFetch } from '../config';
 import { View, FlatList, StyleSheet, BackHandler } from "react-native";
 import { Text } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Provider as PaperProvider, Appbar, Card } from "react-native-paper";
-import { useFocusEffect } from "@react-navigation/native";
 
 function Ledger({ route, navigation }) {
 
@@ -21,13 +20,15 @@ function Ledger({ route, navigation }) {
   }, []);
 
   useEffect(() => {
-    loadCustomer();
-    loadLedger();
-  }, []);
+    if (accno) {
+      loadCustomer();
+      loadLedger();
+    }
+  }, [accno]);
 
   const loadCustomer = async () => {
   try {
-    const response = await fetch(`${BASE_URL}/customerLedgerDet?accno=${accno}`);
+    const response = await safeFetch(`${BASE_URL}/customerLedgerDet?accno=${accno}`);
     const data = await response.json();
     setCustomer(data);
   } catch (error) {
@@ -40,7 +41,7 @@ const isDigiScheme =
   customer?.schemename?.toLowerCase() === "digisilver";
 
   const loadLedger = async () => {
-    const response = await fetch(`${BASE_URL}/ledger?accno=${accno}`);
+    const response = await safeFetch(`${BASE_URL}/ledger?accno=${accno}`);
     const data = await response.json();
 
     console.log("Ledger Data Received:", data);  
@@ -92,7 +93,7 @@ const isDigiScheme =
         <Appbar.Action
           icon="arrow-left"
           color="#ffffff"
-          onPress={() => navigation.goBack()}
+          onPress={navigation.goBack}
         />
         <Appbar.Content title="RKP Jewellery" color="#ffffff" />
       </Appbar.Header>

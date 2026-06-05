@@ -1,5 +1,5 @@
-import React, {useEffect, useState } from "react";
-import { BASE_URL } from '../config';
+import React, {useEffect, useState, useCallback } from "react";
+import { BASE_URL, safeFetch } from '../config';
 import { View, ScrollView, StyleSheet, BackHandler, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { Text, TextInput, Button, Checkbox } from "react-native-paper";
 import { Provider as PaperProvider, Appbar, Card } from "react-native-paper";
@@ -26,7 +26,7 @@ function NewScheme({ navigation, route }) {
       }, []);
 
     useFocusEffect(
-      React.useCallback(() => {
+      useCallback(() => {
         navigation.getParent()?.getParent()?.setOptions({ tabBarStyle: { display: 'none' } });
         return () => navigation.getParent()?.getParent()?.setOptions({ tabBarStyle: undefined });
       }, [navigation])
@@ -34,7 +34,7 @@ function NewScheme({ navigation, route }) {
 
       const loadCustomer = async () => {
         try {
-          const response = await fetch(`${BASE_URL}/customerprofile?mobile=${mobile}`);
+          const response = await safeFetch(`${BASE_URL}/customerprofile?mobile=${mobile}`);
           const data = await response.json();
           if (data.length > 0) setCustomer(data[0]);
         } catch (e) { console.log("loadCustomer error", e); }
@@ -42,7 +42,7 @@ function NewScheme({ navigation, route }) {
 
       const loadSCheme = async () => {
         try {
-          const response = await fetch(`${BASE_URL}/loadscheme?schemename=${schemename}`);
+          const response = await safeFetch(`${BASE_URL}/loadscheme?schemename=${schemename}`);
           const data = await response.json();
           if (data.length > 0) {
             const schemeData = data[0];
@@ -112,7 +112,7 @@ function NewScheme({ navigation, route }) {
         setIsLoading(true);
   
     try {
-      const response = await fetch(`${BASE_URL}/newschpay-success`, {
+      const response = await safeFetch(`${BASE_URL}/newschpay-success`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -166,7 +166,7 @@ function NewScheme({ navigation, route }) {
         <Appbar.Action
           icon="arrow-left"
           color="#ffffff"
-          onPress={() => navigation.goBack()}
+          onPress={navigation.goBack}
         />
         <Appbar.Content title="RKP Jewellery" color="#ffffff" />
       </Appbar.Header>

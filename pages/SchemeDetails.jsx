@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, ScrollView, StyleSheet, BackHandler } from "react-native";
 import { Text, Button, Appbar } from "react-native-paper";
 
@@ -9,7 +9,7 @@ export default function SchemeDetails({ route, navigation }) {
   const [lang, setLang] = useState("ta");
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       navigation.getParent()?.getParent()?.setOptions({ tabBarStyle: { display: 'none' } });
       return () => navigation.getParent()?.getParent()?.setOptions({ tabBarStyle: undefined });
     }, [navigation])
@@ -31,7 +31,7 @@ export default function SchemeDetails({ route, navigation }) {
   return (
     <View style={{ flex: 1, backgroundColor: "#f7f7f7" }}>
       <Appbar.Header style={{ backgroundColor: "#660606" }}>
-        <Appbar.Action icon="arrow-left" color="#ffffff" onPress={() => navigation.goBack()} />
+        <Appbar.Action icon="arrow-left" color="#ffffff" onPress={navigation.goBack} />
         <Appbar.Content title={titles[scheme] || "Scheme Details"} color="#ffffff" />
       </Appbar.Header>
 

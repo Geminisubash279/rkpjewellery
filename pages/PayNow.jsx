@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { BASE_URL } from '../config';
+import React, { useEffect, useState, useCallback } from "react";
+import { BASE_URL, safeFetch } from '../config';
 import { View, StyleSheet, FlatList, BackHandler, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { Provider as PaperProvider, Card, Appbar, Button, Text, TextInput } from "react-native-paper";
 import RazorpayCheckout from 'react-native-razorpay';
@@ -32,7 +32,7 @@ const mobile = route?.params?.mobile;
   
     const loadCustomer = async () => {
   try {
-    const response = await fetch(`${BASE_URL}/customerLedgerDet?accno=${accno}`);
+    const response = await safeFetch(`${BASE_URL}/customerLedgerDet?accno=${accno}`);
     const data = await response.json();
 
     console.log("Customer:", data);
@@ -47,7 +47,7 @@ const mobile = route?.params?.mobile;
 
 const loadLedger = async () => {
   try {
-    const response = await fetch(`${BASE_URL}/customerPayment?accno=${accno}`);
+    const response = await safeFetch(`${BASE_URL}/customerPayment?accno=${accno}`);
     const data = await response.json();
     setLedger(data ? [data] : []);
     if (data?.AMOUNT && parseFloat(data.AMOUNT) > 0) {
@@ -182,7 +182,7 @@ const openRazorpay = () => {
 
     console.log("Payment Payload Being Sent:", paymentPayload);
 
-    const response = await fetch(`${BASE_URL}/payment-success`, {
+    const response = await safeFetch(`${BASE_URL}/payment-success`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -233,7 +233,7 @@ const openRazorpay = () => {
   return (
     <PaperProvider>
       <Appbar.Header style={{ backgroundColor: '#660606' }}>
-        <Appbar.Action icon="arrow-left" color="#ffffff" onPress={() => navigation.goBack()} />
+        <Appbar.Action icon="arrow-left" color="#ffffff" onPress={navigation.goBack} />
         <Appbar.Content title="RKP Jewellery" color="#ffffff" />
       </Appbar.Header>
 

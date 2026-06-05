@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect  } from 'react';
-import { BASE_URL } from './config';
-import { View, Button, Image, TouchableOpacity, StyleSheet, Alert, StatusBar, BackHandler, KeyboardAvoidingView, Platform, ScrollView, Linking } from 'react-native';
+import { BASE_URL, safeFetch } from './config';
+import { View, Image, TouchableOpacity, StyleSheet, Alert, StatusBar, BackHandler, KeyboardAvoidingView, Platform, ScrollView, Linking } from 'react-native';
 import Icon from "react-native-vector-icons/FontAwesome";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -34,7 +34,7 @@ function LoginScreen({ navigation }) {
   const [pinFocused, setPinFocused] = useState(false);
 
   const verifyOTP = () => {
-    fetch(`${BASE_URL}/loginpassword`, {
+    safeFetch(`${BASE_URL}/loginpassword`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -60,7 +60,7 @@ const sendOTP = async () => {
       return;
     }
     try {
-      const response = await fetch(`${BASE_URL}/sendotp`, {
+      const response = await safeFetch(`${BASE_URL}/sendotp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -79,6 +79,8 @@ const sendOTP = async () => {
   const facebookLogin = () => Linking.openURL('https://www.facebook.com');
   const instagramLogin = () => Linking.openURL('https://www.instagram.com');
   const youtubeOpen = () => Linking.openURL('https://youtube.com');
+  const handleSignUp = () => navigation.navigate("Customer");
+  const handleSubmit = () => verifyOTP();
 
   const handlePinChange = (text, index) => {
   if (/^[0-9]?$/.test(text)) {
@@ -180,12 +182,12 @@ const sendOTP = async () => {
 
          <TouchableOpacity 
             style={styles.button} 
-            onPress={() => navigation.navigate("Customer")}
+            onPress={handleSignUp}
           >
             <Text style={styles.textotp}>SignUp / forget PIN? </Text>
           </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={verifyOTP}>
+        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
           <Text style={styles.text}>Submit</Text>
         </TouchableOpacity>
 

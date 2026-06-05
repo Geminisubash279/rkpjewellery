@@ -1,5 +1,5 @@
 import React, {useRef, useEffect, useState } from "react";
-import { BASE_URL } from '../config';
+import { BASE_URL, safeFetch } from '../config';
 import { View, ImageBackground, ScrollView, StyleSheet, Image, FlatList, Animated, Easing, BackHandler } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Provider as PaperProvider,  Appbar,  Text,  Card, TextInput, Button } from 'react-native-paper';
@@ -55,7 +55,7 @@ useEffect(() => {
   }, []);
 
   const loadCustomer = async () => {
-    const response = await fetch(
+    const response = await safeFetch(
       `${BASE_URL}/customerprofile?mobile=${mobile}`
     );
     const data = await response.json();
@@ -195,7 +195,7 @@ function ProfileScreen({ route }) {
   }, []);
 
   const loadCustomer = async () => {
-    const response = await fetch(`${BASE_URL}/customerprofile?mobile=${mobile}`);
+    const response = await safeFetch(`${BASE_URL}/customerprofile?mobile=${mobile}`);
     const data = await response.json();
 
     if (data.length > 0) {
@@ -344,7 +344,7 @@ function MonthInstall({ route, navigation }) {
 
   const loadCustomer = async () => {
     try {
-      const response = await fetch(
+      const response = await safeFetch(
         `${BASE_URL}/getCustomerAccount?mobile=${mobile}`
       );
 
