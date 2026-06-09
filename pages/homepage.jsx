@@ -132,7 +132,7 @@ const silverRotate = silverAnim.interpolate({
           <View style={styles.schemeList}>
             {/* Digi Gold Scheme */}
             <Card style={styles.schemeCardRow}>
-              <Image source={require('../assets/S1.png')} style={styles.schemeImage} />
+              <Image source={require('../assets/S3.png')} style={styles.schemeImage} />
               <Card.Content>
                 <View style={styles.actionRow}>
                   <Text style={styles.schemeTitle}>DigiGold</Text>
@@ -144,7 +144,7 @@ const silverRotate = silverAnim.interpolate({
 
             {/* Digi Silver Scheme */}
             <Card style={styles.schemeCardRow}>
-              <Image source={require('../assets/S2.png')} style={styles.schemeImage} />
+              <Image source={require('../assets/S4.png')} style={styles.schemeImage} />
               <Card.Content>
                 <View style={styles.actionRow}>
                   <Text style={styles.schemeTitle}>DigiSilver</Text>
@@ -156,7 +156,7 @@ const silverRotate = silverAnim.interpolate({
 
             {/* Aishwarya Scheme */}
             <Card style={styles.schemeCardRow}>
-              <Image source={require('../assets/S3.png')} style={styles.schemeImage} />
+              <Image source={require('../assets/S1.png')} style={styles.schemeImage} />
               <Card.Content>
                 <View style={styles.actionRow}>
                   <Text style={styles.schemeTitle}>Aishwarya Lakshmi</Text>
@@ -168,7 +168,7 @@ const silverRotate = silverAnim.interpolate({
 
             {/* Swarna Lakshmi Scheme */}
             <Card style={styles.schemeCardRow}>
-              <Image source={require('../assets/S4.png')} style={styles.schemeImage} />
+              <Image source={require('../assets/S2.png')} style={styles.schemeImage} />
               <Card.Content>
                 <View style={styles.actionRow}>
                   <Text style={styles.schemeTitle}>Swarna Lakshmi</Text>
@@ -551,8 +551,8 @@ function Homepage({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    marginTop : 20,    
+    alignItems: "stretch",
+    marginTop: 20,
   },
   ProfileContainer: {
     flex: 1,
@@ -775,8 +775,10 @@ schemeCard: {
 
 schemeImage: {
   width: "100%",
-  height: 180,
+  height: 200,
   resizeMode: "cover",
+  borderTopLeftRadius: 12,
+  borderTopRightRadius: 12,
 },
 
 schemeTitle: {
@@ -847,6 +849,7 @@ schemeCardRow: {
   backgroundColor: "#ffffff",
   elevation: 4,
   marginBottom: 14,
+  overflow: "hidden",
 },
 schemeCardHorizontal: {
   width: screenWidth - 40,   
