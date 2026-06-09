@@ -218,20 +218,20 @@ return (
   >
     
     <Text style={styles.Heading}>Customer Profile</Text>
-    <TextInput mode="outlined" label="Mobile" textColor="#000" style={styles.input} outlineColor="#6e1e1e" activeOutlineColor="#6e1e1e" keyboardType="numeric" maxLength={10} value={Mobile} onChangeText={handleMobileChange}/>
-    <TextInput mode="outlined" label="Customer Name" textColor="#000" style={styles.input} outlineColor="#6e1e1e" activeOutlineColor="#6e1e1e" value={CustomerName} onChangeText={setCustomerName}/>
-    <TextInput mode="outlined" label="Street Name" textColor="#000" style={styles.input} outlineColor="#6e1e1e" activeOutlineColor="#6e1e1e" value={StreetName} onChangeText={setStreetName}/>
-    <TextInput mode="outlined" label="Area" textColor="#000" style={styles.input} outlineColor="#6e1e1e" activeOutlineColor="#6e1e1e" value={Area} onChangeText={setArea}/>
-    <TextInput mode="outlined" label="City" textColor="#000" style={styles.input} outlineColor="#6e1e1e" activeOutlineColor="#6e1e1e" value={City} onChangeText={setCity}/>
-    <TextInput mode="outlined" label="State" textColor="#000" style={styles.input} outlineColor="#6e1e1e" activeOutlineColor="#6e1e1e" value={State} onChangeText={setState}/>
-    <TextInput mode="outlined" label="Employee ID(Optional)" textColor="#000" style={styles.input} outlineColor="#6e1e1e" activeOutlineColor="#6e1e1e" onChangeText={setEmpid}/>
-    <Text style={{ marginTop: 10, marginBottom: 5, color: '#6e1e1e', fontWeight: 'bold' }}>Location</Text>
-    <View style={{ borderWidth: 1, borderColor: '#6e1e1e', borderRadius: 5, marginBottom: 10, backgroundColor: '#fff' }}>
+    <TextInput mode="outlined" label="Mobile" textColor="#000" style={styles.input} outlineColor="#7B5C00" activeOutlineColor="#7B5C00" keyboardType="numeric" maxLength={10} value={Mobile} onChangeText={handleMobileChange}/>
+    <TextInput mode="outlined" label="Customer Name" textColor="#000" style={styles.input} outlineColor="#7B5C00" activeOutlineColor="#7B5C00" value={CustomerName} onChangeText={setCustomerName}/>
+    <TextInput mode="outlined" label="Street Name" textColor="#000" style={styles.input} outlineColor="#7B5C00" activeOutlineColor="#7B5C00" value={StreetName} onChangeText={setStreetName}/>
+    <TextInput mode="outlined" label="Area" textColor="#000" style={styles.input} outlineColor="#7B5C00" activeOutlineColor="#7B5C00" value={Area} onChangeText={setArea}/>
+    <TextInput mode="outlined" label="City" textColor="#000" style={styles.input} outlineColor="#7B5C00" activeOutlineColor="#7B5C00" value={City} onChangeText={setCity}/>
+    <TextInput mode="outlined" label="State" textColor="#000" style={styles.input} outlineColor="#7B5C00" activeOutlineColor="#7B5C00" value={State} onChangeText={setState}/>
+    <TextInput mode="outlined" label="Employee ID(Optional)" textColor="#000" style={styles.input} outlineColor="#7B5C00" activeOutlineColor="#7B5C00" onChangeText={setEmpid}/>
+    <Text style={{ marginTop: 10, marginBottom: 5, color: '#7B5C00', fontWeight: 'bold' }}>Location</Text>
+    <View style={{ borderWidth: 1, borderColor: '#7B5C00', borderRadius: 5, marginBottom: 10, backgroundColor: '#fff' }}>
       <Picker
         selectedValue={Location}
         onValueChange={(itemValue) => setLocation(itemValue)}
         style={{ color: '#000', height: 50 }}
-        dropdownIconColor="#6e1e1e"
+        dropdownIconColor="#7B5C00"
       >
         <Picker.Item label="Select Location" value="" />
         <Picker.Item label="In Showroom" value="In showroom" />
@@ -239,9 +239,9 @@ return (
       </Picker>
     </View>
     {Location !== "" && (
-      <Text style={{ color: '#6e1e1e', marginBottom: 5 }}>Selected: {Location}</Text>
+      <Text style={{ color: '#7B5C00', marginBottom: 5 }}>Selected: {Location}</Text>
     )}
-    <TextInput mode="outlined" label="Password (4 digit PIN)" textColor="#000" style={styles.input} outlineColor="#6e1e1e" activeOutlineColor="#6e1e1e" keyboardType="numeric" secureTextEntry onChangeText={setPassword}/>
+    <TextInput mode="outlined" label="Password (4 digit PIN)" textColor="#000" style={styles.input} outlineColor="#7B5C00" activeOutlineColor="#7B5C00" keyboardType="numeric" secureTextEntry onChangeText={setPassword}/>
     
     {/* OTP Section */}
     {!otpSent ? (
@@ -255,8 +255,8 @@ return (
           label="Enter OTP"
           textColor="#000"
           style={styles.input}
-          outlineColor="#6e1e1e"
-          activeOutlineColor="#6e1e1e"
+          outlineColor="#7B5C00"
+          activeOutlineColor="#7B5C00"
           keyboardType="numeric"
           onChangeText={setOtp}
         />
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
 
   Heading: {
-    color: '#6e1e1e',
+    color: '#7B5C00',
     fontSize: 18,
     textAlign: 'center',
     fontWeight: 'bold',

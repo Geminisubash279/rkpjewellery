@@ -30,7 +30,7 @@ export default function SchemeDetails({ route, navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f7f7f7" }}>
-      <Appbar.Header style={{ backgroundColor: "#660606" }}>
+      <Appbar.Header style={{ backgroundColor: "#D4AF37" }}>
         <Appbar.Action icon="arrow-left" color="#ffffff" onPress={navigation.goBack} />
         <Appbar.Content title={titles[scheme] || "Scheme Details"} color="#ffffff" />
       </Appbar.Header>
@@ -305,21 +305,21 @@ const styles = StyleSheet.create({
   },
   langBtn: {
     fontSize: 15,
-    color: "#6e0501",
+    color: "#7B5C00",
     paddingHorizontal: 18,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: "#6e0501",
+    borderColor: "#7B5C00",
     borderRadius: 20,
   },
   langBtnActive: {
-    backgroundColor: "#6e0501",
+    backgroundColor: "#7B5C00",
     color: "#fff",
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#6e0501",
+    color: "#7B5C00",
     marginBottom: 10,
   },
   head: {
@@ -355,11 +355,12 @@ const styles = StyleSheet.create({
   header: {
     fontWeight: "bold",
     backgroundColor: "#f0e0e0",
-    color: "#6e0501",
+    color: "#7B5C00",
   },
   btn: {
-    backgroundColor: "#6e0501",
+    backgroundColor: "#7B5C00",
     marginTop: 25,
     borderRadius: 8,
   },
 });
+

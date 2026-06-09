@@ -102,7 +102,7 @@ const sendOTP = async () => {
 
   return (
     <PaperProvider>
-      <StatusBar backgroundColor="#660606" barStyle="light-content" />
+      <StatusBar backgroundColor="#D4AF37" barStyle="dark-content" />
       <Appbar.Header style={{ backgroundColor: '#D4AF37' }}>
         <Appbar.Content title="RKP Jewellery" color="#ffffff" />
       </Appbar.Header>
@@ -135,8 +135,8 @@ const sendOTP = async () => {
             maxLength={10}
 
             textColor="#000000"                 // 👈 dark text
-            outlineColor="#6e1e1e"              // border normal
-            activeOutlineColor="#6e1e1e"        // border focused
+            outlineColor="#D4AF37"
+            activeOutlineColor="#D4AF37"
             placeholderTextColor="#999"         // placeholder color
 
             style={{ width: 300, backgroundColor: "#fff" }}
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',    
-    backgroundColor:"#ffffff",
+    backgroundColor:"#fffdf5",
     gap: 10,
     paddingVertical: 20,
   },
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   
   text: {
     color: '#fff',
-    backgroundColor: '#6e1e1e',
+    backgroundColor: '#7B5C00',
     fontSize: 16,
     width: 150,
     height: 35,
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   },
   Heading: {
     color: '#fff',
-    backgroundColor: '#6e1e1e',
+    backgroundColor: '#7B5C00',
     fontSize: 16,
     width: 350,
     height: 35,
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
    Heading1: {
-    color: '#6e1e1e',
+    color: '#7B5C00',
     fontSize: 16,
     width: 150,
     textAlign: 'center',
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     fontSize: 15
   },
   textotp: {
-    color: '#120b70',
+    color: '#7B5C00',
     fontSize: 16,
     width: 150,
     height: 35,
@@ -338,15 +338,15 @@ otpBox: {
 },
 
 otpBoxFocused: {
-  borderColor: "#6e1e1e",
+  borderColor: "#D4AF37",
   borderWidth: 2,
-  backgroundColor: "#fff5f5",
+  backgroundColor: "#fffdf5",
   elevation: 6,
 },
 
 otpBoxFilled: {
-  borderColor: "#6e1e1e",
-  backgroundColor: "#f9f1f1",
+  borderColor: "#D4AF37",
+  backgroundColor: "#fffdf5",
 },
 
 otpText: {

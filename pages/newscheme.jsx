@@ -104,7 +104,7 @@ function NewScheme({ navigation, route }) {
         contact: '9942251355',
         name: customer?.CustomerName || '',
       },
-      theme: { color: '#660606' },
+      theme: { color: '#D4AF37' },
     };
   
     RazorpayCheckout.open(options)
@@ -245,15 +245,15 @@ function NewScheme({ navigation, route }) {
 
       {(schemename === "1" || schemename === "3") ? (
         <View style={{ marginHorizontal: 15, marginBottom: 10 }}>
-          <Text style={{ color: "#660606", fontWeight: "bold", marginBottom: 8 }}>Select Amount (₹)</Text>
+          <Text style={{ color: "#D4AF37", fontWeight: "bold", marginBottom: 8 }}>Select Amount (₹)</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {[1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000, 25000].map((amt) => (
               <Button
                 key={amt}
                 mode={amount === String(amt) ? "contained" : "outlined"}
                 onPress={() => setAmount(String(amt))}
-                style={{ borderColor: "#660606", backgroundColor: amount === String(amt) ? "#660606" : "#fff" }}
-                labelStyle={{ fontSize: 12, color: amount === String(amt) ? "#fff" : "#660606" }}
+                style={{ borderColor: "#D4AF37", backgroundColor: amount === String(amt) ? "#D4AF37" : "#fff" }}
+                labelStyle={{ fontSize: 12, color: amount === String(amt) ? "#fff" : "#D4AF37" }}
               >
                 ₹{amt.toLocaleString()}
               </Button>
@@ -274,7 +274,7 @@ function NewScheme({ navigation, route }) {
       {/* ✅ ADD INPUTS */}
       {scheme?.weightledger === "Y" && (
       <View style={styles.inputContainer}>
-        <Text textAlign="center" style={{ color: "#660606", fontWeight: "bold", marginBottom: 5, fontSize:16,textAlign: "center", }}>
+        <Text textAlign="center" style={{ color: "#D4AF37", fontWeight: "bold", marginBottom: 5, fontSize:16,textAlign: "center", }}>
           Accumulated Weight: {total.toFixed(3)}
         </Text>
       </View>
@@ -282,7 +282,7 @@ function NewScheme({ navigation, route }) {
 
       {bonuswt > 0 && (
         <View style={styles.inputContainer}>
-          <Text style={{ color: "#660606", fontWeight: "bold", marginBottom: 5, fontSize: 16, textAlign: "center", }} >
+          <Text style={{ color: "#D4AF37", fontWeight: "bold", marginBottom: 5, fontSize: 16, textAlign: "center", }} >
             Bonus Weight: {bonuswt.toFixed(3)} </Text>
         </View>
       )}
@@ -301,7 +301,7 @@ function NewScheme({ navigation, route }) {
       {/* Loading Animation */}
       {isLoading && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#660606" />
+          <ActivityIndicator size="large" color="#D4AF37" />
           <Text style={styles.loadingText}>Processing Payment...</Text>
         </View>
       )}
@@ -332,7 +332,7 @@ container: {
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    color:"#660606",
+    color:"#D4AF37",
     textAlign: "center",
     marginBottom: 10
   },
@@ -354,7 +354,7 @@ container: {
     fontSize: 14,
     fontWeight: "500",
     marginBottom:"10",
-    color:"#8d0052", 
+    color:"#7B5C00", 
     fontWeight:"bold", 
   },
   input: {
@@ -376,13 +376,13 @@ container: {
     color:"#120b70",
   },
   button: {
-    backgroundColor: "#681905",
+    backgroundColor: "#7B5C00",
     borderRadius: 6,
     color: "#ffffff",
   },
 text: {
     color: '#fff',
-    backgroundColor: '#6e1e1e',
+    backgroundColor: '#7B5C00',
     fontSize: 16,
     width: 150,
     height: 35,
@@ -427,8 +427,9 @@ text: {
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: "#660606",
+    color: "#D4AF37",
     fontWeight: "bold",
   },
 
 });
+

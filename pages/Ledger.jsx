@@ -177,7 +177,7 @@ const isDigiScheme =
             <Text style={{ color: "#09750e", fontWeight: "bold", marginBottom: 8 }}>
               Bonus Weight {totalBonus.toFixed(3)} gms
             </Text>
-            <Text style={{ color: "#660606", marginBottom: 7 }}>
+            <Text style={{ color: "#D4AF37", marginBottom: 7 }}>
               *Conditions Apply
             </Text>
           </View>
@@ -248,7 +248,7 @@ container: {
 
 headerRow: {
   flexDirection: "row",
-  backgroundColor: "#660606",
+  backgroundColor: "#D4AF37",
   paddingVertical: 6,
 },
 
@@ -268,7 +268,7 @@ tableRow: {
 cell: {
   flex: 1,
   textAlign: "center",
-  color: "#660606",
+  color: "#D4AF37",
   fontSize: 10,
 },
   
@@ -277,20 +277,20 @@ cell: {
     justifyContent:"space-between",
     marginTop:10,
     padding:10,
-    color: "#660606",
+    color: "#D4AF37",
     backgroundColor:"#ddd"
   },
 
   totalText:{
     fontSize:18,
     fontWeight:"bold",
-    color: "#660606",
+    color: "#D4AF37",
   },
 
   totalValue:{
     fontSize:18,
     fontWeight:"bold",
-    color: "#660606",
+    color: "#D4AF37",
   },
   custRow:{
   flexDirection:"row",
@@ -300,7 +300,7 @@ cell: {
 label:{
   width:80,
   fontSize:16,  
-  color:"#6c558a"
+  color:"#7B5C00"
 },
 
 value:{
@@ -311,3 +311,4 @@ value:{
 },
 
 });
+

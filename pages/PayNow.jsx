@@ -155,7 +155,7 @@ const openRazorpay = () => {
       contact: '9942251355',
       name: customer[0]?.customername || '',
     },
-    theme: { color: '#660606' },
+    theme: { color: '#D4AF37' },
   };
 
   RazorpayCheckout.open(options)
@@ -309,7 +309,7 @@ const openRazorpay = () => {
                           <TextInput
                             label="Amount (₹)"
                             value={amount}
-                            textColor="#6e1e1e"
+                            textColor="#7B5C00"
                             onChangeText={setAmount}
                             keyboardType="number-pad"
                             style={[
@@ -322,7 +322,7 @@ const openRazorpay = () => {
                           <TextInput
                             label="Rate (₹/g)"
                             value={rate}
-                            textColor="#6e1e1e"
+                            textColor="#7B5C00"
                             style={styles.halfInput}
                             editable={false}
                           />
@@ -350,7 +350,7 @@ const openRazorpay = () => {
                   {/* BUTTON */}
                   {isLoading && (
                     <View style={styles.loadingContainer}>
-                      <ActivityIndicator size="large" color="#660606" />
+                      <ActivityIndicator size="large" color="#D4AF37" />
                       <Text style={styles.loadingText}>Processing Payment...</Text>
                     </View>
                   )}
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    backgroundColor: "#660606",
+    backgroundColor: "#D4AF37",
     color: "#fff",
     marginBottom: 20,
     padding: 10,
@@ -393,23 +393,23 @@ const styles = StyleSheet.create({
     fontWeight:'bold',
     textAlign:"center",
     marginBottom: 10,
-    color:"#64071f"
+    color:"#7B5C00"
   },
   inputContainer: {
     marginTop: 5,
     marginBottom: 15,
-    color: "#660606",
+    color: "#D4AF37",
   },
   input: {
     borderWidth:1,
     backgroundColor:"#9b1e1e",
-    color: "#660606",
+    color: "#D4AF37",
     marginBottom: 15,
   },
   totalText: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#660606",
+    color: "#D4AF37",
     marginTop: 5,
     textAlign: "center"
   },
@@ -432,14 +432,14 @@ row: {
 halfInput: {
   flex: 1,
   backgroundColor: "#fff",
-  color:"#421300",
+  color:"#7B5C00",
   borderWidth:1,
   borderCurve:50,
 },
 label:{
   width:80,
   fontSize:14,  
-  color:"#2e0663"
+  color:"#7B5C00"
 },
 
 value:{
@@ -456,7 +456,8 @@ loadingContainer: {
 loadingText: {
   marginTop: 10,
   fontSize: 16,
-  color: "#660606",
+  color: "#D4AF37",
   fontWeight: "bold",
 },
 });
+
