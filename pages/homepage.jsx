@@ -491,14 +491,14 @@ function Homepage({ navigation, route }) {
 
   return (
     <PaperProvider>
-      <Appbar.Header style={{ backgroundColor: '#660606' }}>
+      <Appbar.Header style={{ backgroundColor: '#D4AF37' }}>
         <Appbar.Action icon="home" color="#ffffff" />
         <Appbar.Content title="RKP Jewellery" color="#ffffff" />
         <Appbar.Action icon="logout" color="#ffffff" onPress={_goBack} />
       </Appbar.Header>
       
 
-      <Tab.Navigator screenOptions={{ headerShown: false }}>
+      <Tab.Navigator screenOptions={{ headerShown: false, tabBarStyle: { backgroundColor: '#D4AF37' }, tabBarActiveTintColor: '#ffffff', tabBarInactiveTintColor: '#fff8e1' }}>
         
         <Tab.Screen
           name="Home"
@@ -774,8 +774,8 @@ schemeCard: {
 },
 
 schemeImage: {
-  width: "100%",
-  height: 200,
+  width: screenWidth - 20,
+  height: 220,
   resizeMode: "cover",
   borderTopLeftRadius: 12,
   borderTopRightRadius: 12,
@@ -840,7 +840,7 @@ proceedBtnText: {
 },
 schemeList: {
   width: "100%",
-  paddingHorizontal: 10,
+  paddingHorizontal: 0,
   marginBottom: 10,
 },
 schemeCardRow: {

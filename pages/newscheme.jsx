@@ -162,7 +162,7 @@ function NewScheme({ navigation, route }) {
   return (
     <PaperProvider>
 
-      <Appbar.Header style={{ backgroundColor: '#660606' }}>
+      <Appbar.Header style={{ backgroundColor: '#D4AF37' }}>
         <Appbar.Action
           icon="arrow-left"
           color="#ffffff"

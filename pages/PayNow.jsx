@@ -232,7 +232,7 @@ const openRazorpay = () => {
 
   return (
     <PaperProvider>
-      <Appbar.Header style={{ backgroundColor: '#660606' }}>
+      <Appbar.Header style={{ backgroundColor: '#D4AF37' }}>
         <Appbar.Action icon="arrow-left" color="#ffffff" onPress={navigation.goBack} />
         <Appbar.Content title="RKP Jewellery" color="#ffffff" />
       </Appbar.Header>

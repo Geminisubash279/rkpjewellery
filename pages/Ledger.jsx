@@ -89,7 +89,7 @@ const isDigiScheme =
   return (
     <PaperProvider>
       <SafeAreaView style={{ flex: 1 }}>
-      <Appbar.Header style={{ backgroundColor: '#660606' }}>
+      <Appbar.Header style={{ backgroundColor: '#D4AF37' }}>
         <Appbar.Action
           icon="arrow-left"
           color="#ffffff"
