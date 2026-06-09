@@ -1,7 +1,7 @@
 {
   "provider": "node",
   "build": {
-    "cmd": "npm install --omit=dev --ignore-scripts"
+    "cmd": "npm install express cors axios mssql razorpay --save"
   },
   "start": {
     "cmd": "node server.js"

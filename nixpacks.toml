@@ -2,7 +2,9 @@
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["npm install --omit=dev --ignore-scripts"]
+cmds = [
+  "npm install express cors axios mssql razorpay --save"
+]
 
 [start]
 cmd = "node server.js"

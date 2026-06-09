@@ -1,0 +1,17 @@
+android/
+ios/
+__tests__/
+assets/
+pages/
+App.jsx
+index.js
+metro.config.js
+babel.config.js
+Gemfile
+Gemfile.lock
+tsconfig.json
+jest.config.js
+.eslintrc.js
+.prettierrc.js
+.watchmanconfig
+app.json
