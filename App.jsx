@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   
   text: {
     color: '#fff',
-    backgroundColor: '#7B5C00',
+    backgroundColor: '#3f330d',
     fontSize: 16,
     width: 150,
     height: 35,
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   },
   Heading: {
     color: '#fff',
-    backgroundColor: '#7B5C00',
+    backgroundColor: '#3f330d',
     fontSize: 16,
     width: 350,
     height: 35,
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
    Heading1: {
-    color: '#7B5C00',
+    color: '#3f330d',
     fontSize: 16,
     width: 150,
     textAlign: 'center',
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     fontSize: 15
   },
   textotp: {
-    color: '#7B5C00',
+    color: '#3f330d',
     fontSize: 16,
     width: 150,
     height: 35,
@@ -362,3 +362,4 @@ hiddenInput: {
   opacity: 0,
 },
 });
+

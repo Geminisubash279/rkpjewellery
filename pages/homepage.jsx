@@ -128,7 +128,7 @@ const silverRotate = silverAnim.interpolate({
         </View>
           
 
-          <Text style={{fontSize:16, fontWeight:"bold", color:"#7B5C00", marginBottom:8, textAlign:"center"}}>Our Schemes</Text>
+          <Text style={{fontSize:16, fontWeight:"bold", color:"#3f330d", marginBottom:8, textAlign:"center"}}>Our Schemes</Text>
           <View style={styles.schemeList}>
             {/* Digi Gold Scheme */}
             <Card style={styles.schemeCardRow}>
@@ -286,26 +286,26 @@ function AboutScreen({ route }) {
         <Image source={{uri: 'https://placehold.co/800x200/660606/ffffff?text=RKP+Jewellery'}} style={{ width: "100%", height: 200, resizeMode: "cover" }} />
       </View>
       <View style={{ padding: 20 }}>
-        <Text style={{ fontSize: 22, fontWeight: "bold", color: "#7B5C00", textAlign: "center", marginBottom: 4 }}>RKP JEWELLERY</Text>
+        <Text style={{ fontSize: 22, fontWeight: "bold", color: "#3f330d", textAlign: "center", marginBottom: 4 }}>RKP JEWELLERY</Text>
         <Text style={{ fontSize: 13, color: "#888", textAlign: "center", marginBottom: 20 }}>Your Trusted Jewellery Partner</Text>
 
         <View style={{ backgroundColor: "#fff8f8", borderRadius: 12, padding: 16, elevation: 3, marginBottom: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: "bold", color: "#7B5C00", marginBottom: 8 }}>📍 Address</Text>
+          <Text style={{ fontSize: 13, fontWeight: "bold", color: "#3f330d", marginBottom: 8 }}>📍 Address</Text>
           <Text style={{ fontSize: 13, color: "#444", lineHeight: 22 }}>867/341, Ranipettai Street,{" "}Opp. New Bus Stand,{" "}Attur - 636102</Text>
         </View>
 
         <View style={{ backgroundColor: "#fff8f8", borderRadius: 12, padding: 16, elevation: 3, marginBottom: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: "bold", color: "#7B5C00", marginBottom: 8 }}>📞 Contact</Text>
+          <Text style={{ fontSize: 13, fontWeight: "bold", color: "#3f330d", marginBottom: 8 }}>📞 Contact</Text>
           <Text style={{ fontSize: 14, color: "#0645ad" }} onPress={() => Linking.openURL('tel:9942251355')}>99422 51355</Text>
         </View>
 
         <View style={{ backgroundColor: "#fff8f8", borderRadius: 12, padding: 16, elevation: 3, marginBottom: 8 }}>
-          <Text style={{ fontSize: 13, fontWeight: "bold", color: "#7B5C00", marginBottom: 8 }}>Email</Text>
+          <Text style={{ fontSize: 13, fontWeight: "bold", color: "#3f330d", marginBottom: 8 }}>Email</Text>
           <Text style={{ fontSize: 14, color: "#444" }}>rkpjewellery@gmail.com</Text>
         </View>
 
         <View style={{ backgroundColor: "#fff8f8", borderRadius: 12, padding: 16, elevation: 3 }}>
-          <Text style={{ fontSize: 13, fontWeight: "bold", color: "#7B5C00", marginBottom: 8 }}>🌐 Website</Text>
+          <Text style={{ fontSize: 13, fontWeight: "bold", color: "#3f330d", marginBottom: 8 }}>🌐 Website</Text>
           <Text style={{ fontSize: 14, color: "#0645ad" }} onPress={() => Linking.openURL('https://rkpjewellery.co.in/')}>rkpjewellery.co.in</Text>
         </View>
         
@@ -458,7 +458,7 @@ useEffect(() => {
             )}
 
             <View style={styles.buttonRow}>
-              <Button mode="outlined" style={styles.ledgerBtn} textColor="#7B5C00" onPress={() =>
+              <Button mode="outlined" style={styles.ledgerBtn} textColor="#3f330d" onPress={() =>
                   navigation.navigate("Ledger", { accno: item.ACCNO })}>Ledger</Button>
           
               <Button mode="contained" style={styles.payBtn} textColor="#ffffff"
@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
   fontWeight: "bold"
 },
   text: {
-    color: '#7B5C00',
+    color: '#3f330d',
     textAlign: 'right',
     alignSelf: 'stretch',
     width: 400,
@@ -628,20 +628,20 @@ input1:{
   Custdet: {
     marginBottom: 6,
     fontSize : 20,    
-    color : "#7B5C00",
+    color : "#3f330d",
   },
   row: {
     flexDirection: "row",
   },
   label: {
     fontSize:20,
-    color : "#7B5C00",
+    color : "#3f330d",
     width: 100,    
   },
   Aboutlabel1: {
     fontSize:20,   
     fontWeight: "bold",
-    color:"#7B5C00",
+    color:"#3f330d",
     textAlign:'center'
   },  
    Aboutlabel: {
@@ -674,14 +674,14 @@ input1:{
   },
   labelMonth: {
     fontSize:13,
-    color : "#7B5C00",
+    color : "#3f330d",
     width: 70,    
     justifyContent:'center'
   },
   labelMonthIns: {
     fontSize:13,
     width: 100,    
-    color : "#7B5C00",
+    color : "#3f330d",
     justifyContent:'center',
     marginTop:5,
   },
@@ -696,7 +696,7 @@ input1:{
     flex:1,
     fontSize:18,
     fontWeight:"bold",
-    color:"#7B5C00",
+    color:"#3f330d",
     marginBottom:5,
   },
   valueMonthWt: {
@@ -741,14 +741,14 @@ buttonRow:{
 payBtn:{
   flex:1,
   marginRight:5,
-  backgroundColor:"#7B5C00",
+  backgroundColor:"#3f330d",
 },
 
 ledgerBtn:{
   flex:1,
   marginLeft:5,
-  color:"#7B5C00",
-  borderColor:"#7B5C00",
+  color:"#3f330d",
+  borderColor:"#3f330d",
 },
 aboutImage: {
   justifyContent:"center",
@@ -785,7 +785,7 @@ schemeTitle: {
   fontSize: 14,
   fontWeight: "bold",
   marginTop:10,
-  color:"#7B5C00",
+  color:"#3f330d",
   marginBottom: 5,
 },
 
@@ -814,7 +814,7 @@ schemeLongTextHead: {
 },
 
 readMore: {
-  color: "#7B5C00",
+  color: "#3f330d",
   marginTop: 10,
   fontWeight: "bold",
 },
@@ -828,7 +828,7 @@ actionRow: {
 },
 
 proceedBtn: {
-  backgroundColor: "#7B5C00",
+  backgroundColor: "#3f330d",
   minWidth: 0,
   paddingHorizontal: 2,
   height: 32,
@@ -891,7 +891,7 @@ langRow: {
 
 langText: {
   marginHorizontal: 10,
-  color: "#7B5C00",
+  color: "#3f330d",
   fontWeight: "bold",
 },
 card: {
@@ -949,4 +949,5 @@ center: {
   },
 
 });
+
 
